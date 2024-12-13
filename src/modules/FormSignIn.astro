@@ -1,5 +1,6 @@
 ---
-import { asset, url } from '../lib/data.js';
+import { url } from '../lib/data.js';
+import { REPO_NAME } from '../app/constants.js';
 ---
 
 <div
@@ -9,29 +10,34 @@ import { asset, url } from '../lib/data.js';
 		href="#"
 		class="flex items-center justify-center mb-8 text-2xl font-semibold lg:mb-10 dark:text-white"
 	>
-		<img src={asset('images/logo.svg')} alt="FlowBite Logo" class="mr-4 h-11" />
-		<span>Flowbite</span>
+		<img src={url('assets/logo.svg')} alt="FlowBite Logo" class="mr-4 h-11" />
+		<span>{REPO_NAME}</span>
 	</a>
 	<!-- Card -->
 	<div
 		class="w-full max-w-xl p-6 space-y-8 sm:p-8 bg-white rounded-lg shadow dark:bg-gray-800"
 	>
 		<h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-			Sign in to platform
+			登录
 		</h2>
+		<div id="error-message" class="hidden items-center p-4 mb-4 text-red-800 bg-red-100 rounded-lg" role="alert">
+			<svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+				<path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+			</svg>
+			<div class="ml-3 text-sm font-medium" id="error-text"></div>
+		</div>
 		<form class="mt-8 space-y-6" action="#">
 			<div>
 				<label
-					for="email"
+					for="username"
 					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-					>Your email</label
+					>用户名/邮箱</label
 				>
 				<input
-					type="email"
-					name="email"
-					id="email"
+					name="username"
+					id="username"
 					class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-					placeholder="name@company.com"
+					placeholder="用户名/邮箱"
 					required
 				/>
 			</div>
@@ -39,7 +45,7 @@ import { asset, url } from '../lib/data.js';
 				<label
 					for="password"
 					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-					>Your password</label
+					>密码</label
 				>
 				<input
 					type="password"
@@ -58,32 +64,153 @@ import { asset, url } from '../lib/data.js';
 						name="remember"
 						type="checkbox"
 						class="w-4 h-4 border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:focus:ring-primary-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-						required
 					/>
 				</div>
 				<div class="ml-3 text-sm">
 					<label
 						for="remember"
-						class="font-medium text-gray-900 dark:text-white">Remember me</label
+						class="font-medium text-gray-900 dark:text-white">记住我</label
 					>
 				</div>
 				<a
-					href="#"
+					href={url()}
 					class="ml-auto mt-4 text-left text-sm text-primary-700 hover:underline dark:text-primary-500 w-full"
-					>Lost Password?</a
+					>忘记密码</a
 				>
 			</div>
 			<button
 				type="submit"
 				class="w-full px-5 py-3 text-base font-medium text-center text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 sm:w-auto dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-				>Login to your account</button
+				>登录这该死的账号</button
 			>
 			<div class="text-sm font-medium text-gray-500 dark:text-gray-400">
-				Not registered? <a
+				没有账号? <a
+					href={url("authentication/register")}
 					class="text-primary-700 hover:underline dark:text-primary-500"
-					>Create account</a
+					>注册账号</a
 				>
 			</div>
 		</form>
 	</div>
 </div>
+
+<script>
+	// 导入 axios
+	import api from '../lib/axios.js';
+
+	const form = document.querySelector('form');
+	const usernameInput = document.getElementById('username');
+	const passwordInput = document.getElementById('password');
+
+	// 用户名验证函数
+	function validateUsername(username) {
+		// 检查是否是邮箱格式
+		const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+		// 检查用户名格式
+		const usernamePattern = /^[a-zA-Z0-9\u4e00-\u9fa5]+$/;
+		// 如果是邮箱格式或者用户名格式都返回true
+		return emailPattern.test(username) || usernamePattern.test(username);
+	}
+
+	// 密码验证函数
+	function validatePassword(password) {
+		return password.length >= 6 && password.length <= 20;
+	}
+
+	// 添加显示错误信息的函数
+	function showError(message) {
+		const errorDiv = document.getElementById('error-message');
+		const errorText = document.getElementById('error-text');
+		errorText.textContent = message;
+		errorDiv.classList.remove('hidden');
+		errorDiv.classList.add('flex');
+	}
+
+	// 添加隐藏错误信息的函数
+	function hideError() {
+		const errorDiv = document.getElementById('error-message');
+		errorDiv.classList.add('hidden');
+		errorDiv.classList.remove('flex');
+	}
+
+	form.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		hideError();
+
+		const username = usernameInput.value.trim();
+		const password = passwordInput.value.trim();
+		const rememberMe = document.getElementById('remember').checked;
+
+		// 表单验证
+		if (!validateUsername(username)) {
+			alert('用户名只能包含字母、数字和中文字符');
+			return;
+		}
+
+		if (!validatePassword(password)) {
+			alert('密码长度必须在6-20个字符之间');
+			return;
+		}
+
+		try {
+			const response = await api({
+				method: 'post',
+				url: '/api/auth/login',
+				params: {
+					'username': username,
+					'password': password
+				},
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (response.data.code === 200) {
+				// 登录成功
+				if (response.data.data.developerToken) {
+					// 存储 token
+					localStorage.setItem('token', response.data.data.developerToken);
+					
+					// 记住我功能
+					if (rememberMe) {
+						localStorage.setItem('rememberedUser', JSON.stringify({
+							'expired': response.data.data.developerExpire,
+							'username': response.data.data.developerName,
+							'password': password
+						}));
+					} else {
+						localStorage.removeItem('rememberedUser');
+					}
+				}
+				
+				// const test = await api.get('/api/soft/test');
+				// alert(JSON.stringify(test));
+				window.location.href = '/dashboard';
+			} else {
+				showError(response.data.message);
+			}
+		} catch (error) {
+			showError(response.data.message+"\n"+error);
+		}
+	});
+
+	// 页面加载时检查是否有保存的登录信息
+	window.addEventListener('DOMContentLoaded', () => {
+		const rememberedUser = localStorage.getItem('rememberedUser');
+		if (rememberedUser) {
+			const userData = JSON.parse(rememberedUser);
+			const username = document.getElementById('username');
+			const rememberCheckbox = document.getElementById('remember');
+			const password = document.getElementById('password');
+			
+			// 填充用户名
+			username.value = userData.username;
+			// 自动勾选"记住我"
+			rememberCheckbox.checked = true;
+			// 填充密码
+			password.value = userData.password;
+		}
+	});
+</script>
+
+

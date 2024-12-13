@@ -21,6 +21,44 @@ const getMainChartOptions = () => {
 		};
 	}
 
+	// 预定义的颜色集合
+	const colorPool = ['#99A7C0', '#808284', '#70706E', '#C0C8C0', '#91A08E','#647489','#7A8A98','#D0D0D0','#E0E0D0','#76846A'];
+	
+	// 从颜色池中随机获取不重复的颜色
+	const getRandomColors = (count: number) => {
+		const shuffled = [...colorPool].sort(() => 0.5 - Math.random());
+		return shuffled.slice(0, count);
+	};
+
+	const randomColors = getRandomColors(5); // 获取2个随机颜色
+
+	// 生成最近7天的日期
+	const getLast7Days = () => {
+		const dates = [];
+		for (let i = 6; i >= 0; i--) {
+			const date = new Date();
+			date.setDate(date.getDate() - i);
+			dates.push(date.toISOString().split('T')[0]); // 格式: YYYY-MM-DD
+		}
+		return dates;
+	};
+
+	const data = {
+		softwareList: [
+			{
+				name: '软件A',
+				values: [25, 42, 15, 38, 31, 28, 35],  // 7个数据点
+				color: randomColors[0]
+			},
+			{
+				name: '软件B',
+				values: [15, 32, 25, 48, 21, 38, 42],  // 7个数据点
+				color: randomColors[1]
+			}
+		],
+		dates: getLast7Days()
+	};
+
 	return {
 		chart: {
 			height: 420,
@@ -47,6 +85,11 @@ const getMainChartOptions = () => {
 				fontSize: '14px',
 				fontFamily: 'Inter, sans-serif',
 			},
+			y: {
+				formatter: function(value) {
+					return value.toString();
+				}
+			}
 		},
 		grid: {
 			show: true,
@@ -57,18 +100,11 @@ const getMainChartOptions = () => {
 				bottom: 15,
 			},
 		},
-		series: [
-			{
-				name: 'Revenue',
-				data: [6356, 6218, 6156, 6526, 6356, 6256, 6056],
-				color: '#1A56DB',
-			},
-			{
-				name: 'Revenue (previous period)',
-				data: [6556, 6725, 6424, 6356, 6586, 6756, 6616],
-				color: '#FDBA8C',
-			},
-		],
+		series: data.softwareList.map(software => ({
+			name: software.name,
+			data: software.values,
+			color: software.color
+		})),
 		markers: {
 			size: 5,
 			strokeColors: '#ffffff',
@@ -78,15 +114,7 @@ const getMainChartOptions = () => {
 			},
 		},
 		xaxis: {
-			categories: [
-				'01 Feb',
-				'02 Feb',
-				'03 Feb',
-				'04 Feb',
-				'05 Feb',
-				'06 Feb',
-				'07 Feb',
-			],
+			categories: data.dates,
 			labels: {
 				style: {
 					colors: [mainChartColors.labelColor],
@@ -117,8 +145,8 @@ const getMainChartOptions = () => {
 					fontSize: '14px',
 					fontWeight: 500,
 				},
-				formatter(value) {
-					return `$${value}`;
+				formatter: function(value) {
+					return value.toString();
 				},
 			},
 		},
@@ -166,16 +194,16 @@ if (document.getElementById('new-products-chart')) {
 		colors: ['#1A56DB', '#FDBA8C'],
 		series: [
 			{
-				name: 'Quantity',
-				color: '#1A56DB',
+				name: '软件A',
+				color: '#1A56DB', 
 				data: [
-					{ x: '01 Feb', y: 170 },
-					{ x: '02 Feb', y: 180 },
-					{ x: '03 Feb', y: 164 },
-					{ x: '04 Feb', y: 145 },
-					{ x: '05 Feb', y: 194 },
-					{ x: '06 Feb', y: 170 },
-					{ x: '07 Feb', y: 155 },
+					{ x: '2024-01-24', y: 32 },
+					{ x: '2024-01-25', y: 45 },
+					{ x: '2024-01-26', y: 18 },
+					{ x: '2024-01-27', y: 27 },
+					{ x: '2024-01-28', y: 41 },
+					{ x: '2024-01-29', y: 15 },
+					{ x: '2024-01-30', y: 38 },
 				],
 			},
 		],
@@ -660,3 +688,21 @@ if (document.getElementById('traffic-by-device')) {
 		chart.updateOptions(getTrafficChannelsChartOptions());
 	});
 }
+
+function initDocViewer() {
+	document.querySelectorAll('.upload-btn').forEach(button => {
+			button.addEventListener('click', () => {
+					const docPath = button.dataset.docPath;
+					const docTitle = button.dataset.docTitle;
+					
+					window.dispatchEvent(new CustomEvent('show-doc', { 
+							detail: {
+									path: docPath,
+									title: docTitle
+							}
+					}));
+			});
+	});
+}
+
+document.addEventListener('DOMContentLoaded', initDocViewer);

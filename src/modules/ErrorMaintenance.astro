@@ -1,5 +1,5 @@
 ---
-import { asset, url } from '../lib/data.js';
+import { url } from '../lib/data.js';
 ---
 
 <div
@@ -7,7 +7,7 @@ import { asset, url } from '../lib/data.js';
 >
 	<div class="block mb-5 md:max-w-md">
 		<img
-			src={asset('images/illustrations/maintenance.svg')}
+			src={url('assets/maintenance.svg')}
 			alt="maintenance image"
 		/>
 	</div>
@@ -15,17 +15,12 @@ import { asset, url } from '../lib/data.js';
 		<h1
 			class="mb-3 text-2xl font-bold leading-tight text-gray-900 sm:text-4xl lg:text-5xl dark:text-white"
 		>
-			Under Maintenance
+			此页面正在维护
 		</h1>
 		<p
 			class="mb-5 text-base font-normal text-gray-500 md:text-lg dark:text-gray-400"
 		>
-			Sorry for the inconvenience but we’re performing some maintenance at the
-			moment. If you need to you can always <a
-				href={'#'}
-				class="text-primary-700 hover:underline dark:text-primary-500"
-				>contact us</a
-			>, otherwise we’ll be back online shortly!.
+			别催了别催了 我真的在加速干活了🥲 
 		</p>
 		<a
 			href={url()}
@@ -41,7 +36,7 @@ import { asset, url } from '../lib/data.js';
 					d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
 					clip-rule="evenodd"></path></svg
 			>
-			Go back home
+			回到首页
 		</a>
 	</div>
 </div>

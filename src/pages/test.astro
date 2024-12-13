@@ -1,0 +1,11 @@
+---
+import { fetchDataGet,getCircularReplacer,uuid } from "./api/http.js";
+
+const data = await fetchDataGet('https://api.m.taobao.com/rest/api3.do?api=mtop.common.getTimestamp');
+const uuidStr = uuid();
+---
+<div>
+	<h1>!!!:{(data)}</h1>
+	<h1>!!!:{(uuidStr)}</h1>
+	<!-- <h1>!!!:{JSON.stringify(data,getCircularReplacer())}</h1> -->
+</div>

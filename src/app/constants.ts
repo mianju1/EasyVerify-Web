@@ -7,6 +7,10 @@ export const SITE_TITLE = 'Flowbite Astro Admin Dashboard';
 /* Useful flag for sourcing from `./data` entirely, disabling randomize layer */
 export const RANDOMIZE = Boolean(import.meta.env.RANDOMIZE) || true;
 
+export const GITHUB_REPO_URL = 'https://github.com/themesberg/flowbite-astro-admin-dashboard';
+export const REPO_NAME = '伊泽网络验证';
+
+
 // NOTE: Unmapped
 // export const SIDEBAR = [
 // 	{
