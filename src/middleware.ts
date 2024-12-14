@@ -4,14 +4,12 @@ const publicPages = [
 	'/',
 	'/authentication/login',
 	'/authentication/register',
-	'/authentication/reset-password',
-	'/authentication/forgot-password'
+	'/authentication/forget'
 ];
 const redirectPages = [
 	'/authentication/login',
 	'/authentication/register',
-	'/authentication/reset-password',
-	'/authentication/forgot-password',
+	'/authentication/forget',
 ];
 
 export const onRequest = defineMiddleware(async (context, next) => {
