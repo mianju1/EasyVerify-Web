@@ -51,7 +51,7 @@ import { REPO_NAME } from '../app/constants.js';
 					type="password"
 					name="password"
 					id="password"
-					placeholder="••••••••"
+					placeholder="密码"
 					class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
 					required
 				/>
@@ -170,7 +170,10 @@ import { REPO_NAME } from '../app/constants.js';
 				if (response.data.data.developerToken) {
 					// 存储 token
 					localStorage.setItem('token', response.data.data.developerToken);
-					
+					// 存储用户名
+					localStorage.setItem('username', response.data.data.developerName);
+					document.cookie = `token=${response.data.data.developerToken}; path=/`;
+					document.cookie = `username=${response.data.data.developerName}; path=/`;
 					// 记住我功能
 					if (rememberMe) {
 						localStorage.setItem('rememberedUser', JSON.stringify({

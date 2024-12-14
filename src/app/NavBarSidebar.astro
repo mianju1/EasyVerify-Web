@@ -10,6 +10,7 @@ import { GITHUB_REPO_URL, REPO_NAME } from './constants.js';
 import { uuid } from '../pages/api/http';
 
 const randomHeaderPic = `https://api.multiavatar.com/${uuid()}.png`;
+
 ---
 
 <nav
@@ -111,14 +112,9 @@ const randomHeaderPic = `https://api.multiavatar.com/${uuid()}.png`;
 						id="dropdown-2"
 					>
 						<div class="px-4 py-3" role="none">
-							<p class="text-sm text-gray-900 dark:text-white" role="none">
-								用户名
-							</p>
-							<p
-								class="text-sm font-medium text-gray-900 truncate dark:text-gray-300"
-								role="none"
+							<p class="text-sm text-gray-900 dark:text-white" role="none" id="username-display" data-username-default="None"
 							>
-								邮箱@foxmail.com
+								用户名
 							</p>
 						</div>
 						<ul class="py-1" role="none">
@@ -131,17 +127,18 @@ const randomHeaderPic = `https://api.multiavatar.com/${uuid()}.png`;
 							</li>
 							<li>
 								<a
-									href="#"
+									href="/setting/user/settings"
 									class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
 									role="menuitem">用户设置</a
 								>
 							</li>
 							<li>
 								<a
-									href="#"
+									href="#" 
 									class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
-									role="menuitem">登出</a
-								>
+									role="menuitem"
+									id="logoutBtn"
+								>登出</a>
 							</li>
 						</ul>
 					</div>
@@ -150,3 +147,35 @@ const randomHeaderPic = `https://api.multiavatar.com/${uuid()}.png`;
 		</div>
 	</div>
 </nav>
+
+<script>
+import axios from '../lib/axios';
+
+const usernameElement = document.getElementById('username-display');
+  if (usernameElement) {
+    const username = localStorage.getItem('username') || usernameElement.dataset.usernameDefault;
+    usernameElement.textContent = username;
+  }
+
+document.getElementById('logoutBtn').addEventListener('click', async function() {
+	try {
+		const response = await axios.post('/api/auth/logout');
+		
+		if(response.data.code === 200) {
+			// 清除本地存储和cookie
+			localStorage.removeItem('token');
+			localStorage.removeItem('rememberedUser');
+			localStorage.removeItem('username');
+			document.cookie = 'token=; path=/;';
+			
+			window.location.href = '/authentication/login';
+		}
+		else {
+			alert(response.data.message);
+		}
+	} catch(err) {
+		console.error('登出失败:', err);
+	}
+});
+
+</script>

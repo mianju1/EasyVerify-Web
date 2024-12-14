@@ -35,9 +35,12 @@ instance.interceptors.response.use(
         // 如果响应状态码是 401（未授权），可能是 token 过期
         if (response.data.code && error.response.status === 401) {
             // 清除本地存储的 token
-            localStorage.removeItem('rememberedUser');
+            localStorage.removeItem('token');
+						document.cookie = 'token=; path=/;';
+						document.cookie = 'username=; path=/;';
+
             // 重定向到登录页面
-            window.location.href = '/login';
+            window.location.href = '/authentication/login';
         }
         return Promise.reject(error);
     }
