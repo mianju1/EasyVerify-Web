@@ -1,10 +1,10 @@
 <template>
-  <div class="user-settings-container">
-    <h2 class="settings-title">个人设置</h2>
+  <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+    <h2 class="mb-4 text-xl font-semibold dark:text-white">个人设置</h2>
 
     <!-- 账号信息部分 -->
-    <div class="settings-section">
-      <h3 class="settings-title">账号信息</h3>
+    <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+      <h3 class="mb-4 text-xl font-semibold dark:text-white">账号信息</h3>
       <div class="info-item">
         <label>用户 ID:</label>
         <span id="userId">{{ userId }}</span>
@@ -16,20 +16,26 @@
     </div>
 
     <!-- 密码修改部分 -->
-    <div class="settings-section">
-      <h3 class="settings-title">密码修改</h3>
+    <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+      <h3 class="mb-4 text-xl font-semibold dark:text-white">密码修改</h3>
       <div class="password-form">
         <div class="form-item">
           <label>当前密码:</label>
-          <input type="password" v-model="currentPassword" placeholder="●●●●●●●●"/>
+          <input 
+					class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+					type="password" v-model="currentPassword" placeholder="●●●●●●●●"/>
         </div>
         <div class="form-item">
           <label>新密码:</label>
-          <input type="password" v-model="newPassword" />
+          <input
+					class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+					type="password" v-model="newPassword" />
         </div>
         <div class="form-item">
           <label>确认新密码:</label>
-          <input type="password" v-model="confirmPassword" />
+          <input
+					class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+					type="password" v-model="confirmPassword" />
         </div>
         <div class="button-container">
           <button @click="handleChangePassword" class="upload-btn">修改密码</button>
@@ -38,11 +44,13 @@
     </div>
 
     <!-- 其他设置部分 -->
-    <div class="settings-section">
-      <h3 class="settings-title">其他设置</h3>
+    <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+      <h3 class="mb-4 text-xl font-semibold dark:text-white">其他设置</h3>
       <div class="form-item">
         <label>电子邮箱:</label>
-        <input type="email" v-model="email" />
+        <input
+				class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+				type="email" v-model="email" />
         <button 
           @click="handleGetVerificationCode" 
           class="upload-btn" 
@@ -53,12 +61,13 @@
       </div>
       <div class="form-item">
         <label>验证码:</label>
-        <input type="text" v-model="emailCode" />
+        <input
+				class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+				type="text" v-model="emailCode" />
       </div>
       
       <div class="button-container">
         <button @click="handleSaveChanges" class="upload-btn">保存更改</button>
-        <button @click="handleCancelChanges" class="delete-btn">取消</button>
       </div>
     </div>
 
@@ -176,25 +185,6 @@ defineProps({
   padding: 20px;
 }
 
-.settings-title {
-  font-size: 24px;
-  margin-bottom: 30px;
-  color: #333;
-}
-
-.settings-section {
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.settings-section h3 {
-  margin-bottom: 15px;
-  color: #444;
-}
-
 .info-item, .form-item {
   margin-bottom: 15px;
   display: flex;
@@ -225,68 +215,11 @@ input {
   transition: background-color 0.2s;
 }
 
-.delete-btn {
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: 1px solid #d1d5db;
-  background-color: white;
-  color: #374151;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
 .button-container {
   display: flex;
-  justify-content: center;
+  justify-content: left;
   gap: 20px;
   margin-top: 20px;
 }
 
-/* 深色模式适 */
-:global(.dark) .settings-section h3 {
-  color: #b9bbbe;
-}
-
-:global(.dark) .settings-section {
-  background-color: #1f2937;
-  color: #f3f4f6;
-}
-
-:global(.dark) input {
-  background-color: #374151;
-  border-color: #4b5563;
-  color: #f3f4f6;
-}
-
-:global(.dark) .upload-btn {
-  background-color: #2563eb;
-}
-
-:global(.dark) .upload-btn:hover {
-  background-color: #1d4ed8;
-}
-
-:global(.dark) .delete-btn {
-  background-color: #374151;
-  border-color: #4b5563;
-  color: #d1d5db;
-}
-
-:global(.dark) .delete-btn:hover {
-  background-color: #4b5563;
-  border-color: #6b7280;
-}
-
-:global(.dark) label {
-  color: #b9bbbe;
-}
-
-.upload-btn:disabled {
-  background-color: #9ca3af;
-  cursor: not-allowed;
-}
-
-:global(.dark) .upload-btn:disabled {
-  background-color: #4b5563;
-}
 </style>

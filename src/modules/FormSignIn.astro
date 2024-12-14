@@ -143,12 +143,12 @@ import { REPO_NAME } from '../app/constants.js';
 
 		// 表单验证
 		if (!validateUsername(username)) {
-			alert('用户名只能包含字母、数字和中文字符');
+			showError('用户名只能包含字母、数字和中文字符');
 			return;
 		}
 
 		if (!validatePassword(password)) {
-			alert('密码长度必须在6-20个字符之间');
+			showError('密码长度必须在6-20个字符之间');
 			return;
 		}
 

@@ -129,7 +129,7 @@ const randomHeaderPic = `https://api.multiavatar.com/${uuid()}.png`;
 								<a
 									href="/setting/user/settings"
 									class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
-									role="menuitem">用户设置</a
+									role="menuitem">个人设置</a
 								>
 							</li>
 							<li>
@@ -154,7 +154,7 @@ import axios from '../lib/axios';
 const usernameElement = document.getElementById('username-display');
   if (usernameElement) {
     const username = localStorage.getItem('username') || usernameElement.dataset.usernameDefault;
-    usernameElement.textContent = username;
+    usernameElement.textContent = '用户名：'+username;
   }
 
 document.getElementById('logoutBtn').addEventListener('click', async function() {

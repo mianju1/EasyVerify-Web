@@ -4,6 +4,7 @@ import GitHubButton from '../components/GitHubButton.astro';
 
 import { GITHUB_REPO_URL,REPO_NAME } from './constants.js';
 const { req_params } = Astro.props
+const default_req_params = 'login';
 ---
 
 <nav
@@ -46,7 +47,7 @@ const { req_params } = Astro.props
 			<div class="hidden sm:flex sm:ml-6">
 				<!-- <GitHubButton repository={GITHUB_REPO_URL.split("github.com/")[1]} /> -->
 				<a
-					href={url("authentication/" + req_params)}
+					href={url(req_params ? "authentication/" + req_params : "authentication/" + default_req_params)}
 					class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
 				>
 					<svg
