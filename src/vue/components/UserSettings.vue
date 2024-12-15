@@ -75,7 +75,7 @@
       v-model="showPasswordModal"
       title="确认修改密码"
       message="确定是否更改密码，此次操作不可撤销"
-      @close="showPasswordModal = false"
+      @cancel="showPasswordModal = false"
       @confirm="handlePasswordConfirm"
     />
 
@@ -83,7 +83,7 @@
       v-model="showSaveModal"
       title="保存更改"
       message="确定要保存更改吗？"
-      @close="showSaveModal = false"
+      @cancel="showSaveModal = false"
       @confirm="handleSaveConfirm"
     />
 
@@ -155,6 +155,7 @@ const handleCancelChanges = () => {
 // 添加确认处理方法
 const handlePasswordConfirm = () => {
   // 这里添加实际的密码修改逻辑
+	showPasswordModal.value = false
   message.value.show({
     type: 'success',
     content: '密码修改成功'
@@ -163,6 +164,7 @@ const handlePasswordConfirm = () => {
 
 const handleSaveConfirm = () => {
   // 这里添加实际的保存逻辑
+	showSaveModal.value = false
   message.value.show({
     type: 'success',
     content: '设置已保存'

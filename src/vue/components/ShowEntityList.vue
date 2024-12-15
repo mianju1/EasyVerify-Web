@@ -14,15 +14,13 @@
 					</label>
 				</div>
 			</td>
-			<div v-for="(key, index) in key_list" :key="index" class="flex items-center">
-				<td class="p-4 space-x-2 whitespace-nowrap">
-					
-					<span class="text-gray-900 dark:text-white">
-						{{item[key]}}
-					</span>
-					 
-				</td>
-			</div>
+			<td v-for="(key, index2) in key_list" 
+				:key="index2" 
+				class="p-4 space-x-2 whitespace-nowrap">
+				<span class="text-gray-900 dark:text-white">
+					{{item[key]}}
+				</span>
+			</td>
 			<td class="p-4 text-base font-normal text-gray-900 whitespace-nowrap dark:text-white">
 				<div class="flex items-center">
 						<div v-if="true" class="h-2.5 w-2.5 rounded-full bg-green-400 mr-2" />
@@ -35,8 +33,7 @@
 			<td class="p-4 space-x-2 whitespace-nowrap flex justify-center">
 				<button
 					type="button"
-					data-modal-target="edit-user-modal"
-					data-modal-toggle="edit-user-modal"
+					@click="handleEdit(item)"
 					class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
 				>
 					<svg
@@ -52,7 +49,7 @@
 								clip-rule="evenodd"
 							/>
 					</svg>
-					Edit user
+					编辑
 				</button>
 				<button
 					type="button"
@@ -80,9 +77,10 @@
 </template>
 <script>
 export default {
-	props:{
-		dataList:{
-			type: Object
+	props: {
+		dataList: {
+			type: Array,
+			required: true
 		}
 	},
 	computed:{
@@ -92,6 +90,15 @@ export default {
 			}
 		}
 	},
+	methods: {
+		handleEdit(item) {
+			console.log('子组件触发编辑:', item)
+			this.$emit('edit', item)
+		}
+	},
+	mounted() {
+		console.log('组件加载，数据:', this.dataList)
+	}
 }
 </script>
 <style lang="">
