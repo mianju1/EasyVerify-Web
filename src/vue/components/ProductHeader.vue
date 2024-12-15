@@ -51,10 +51,21 @@
       </div>
     </div>
   </div>
+
+  <!-- 添加 EditModal 组件 -->
+  <EditModal
+    v-model="showAddModal"
+    title="添加新应用"
+    :fields="formFields"
+    type="primary"
+    @save="handleSave"
+    @cancel="handleCancel"
+  />
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
+import EditModal from './EditModal.vue'
 
 const props = defineProps({
   title: {
@@ -76,15 +87,19 @@ const props = defineProps({
   searchPlaceholder: {
     type: String,
     default: '搜索...'
+  },
+  formFields: {
+    type: Array,
+    required: true
   }
 })
 
 const searchQuery = ref('')
+const showAddModal = ref(false)
 
 // 搜索处理函数
 const handleSearch = () => {
   if (searchQuery.value.trim()) {
-    // 创建并分发自定义事件
     const event = new CustomEvent('search', {
       detail: searchQuery.value.trim(),
       bubbles: true,
@@ -96,11 +111,22 @@ const handleSearch = () => {
 
 // 添加按钮点击事件
 const handleAddClick = () => {
-  // 创建并分发自定义事件
+  showAddModal.value = true
+}
+
+// 处理保存
+const handleSave = (formData) => {
   const event = new CustomEvent('add', {
+    detail: formData,
     bubbles: true,
     composed: true
   })
   document.querySelector('entities-crud').dispatchEvent(event)
+  showAddModal.value = false
+}
+
+// 处理取消
+const handleCancel = () => {
+  showAddModal.value = false
 }
 </script>

@@ -135,6 +135,12 @@ const formFields = [
 		type: 'textarea',
 		rows: 3,
 		placeholder: '请输入备注信息'
+	},{
+		key: 'snotice',
+		label: '公告',	
+		type: 'textarea',
+		rows: 3,
+		placeholder: '请输入公告信息'
 	}
 ]
 
