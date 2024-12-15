@@ -79,6 +79,7 @@
 			@cancel="cancelEdit"
 		/>
 	</div>
+	<Message ref="message" />
 </template>
 
 <script setup>
@@ -86,6 +87,10 @@ import { ref, onMounted } from 'vue'
 import api from '../../lib/axios'
 import ConfirmModal from './ConfirmModal.vue'
 import EditModal from './EditModal.vue'  // 导入编辑模态框组件
+import Message from './Message.vue'
+
+// 定义Message组件
+const message = ref(null)
 
 // Props 定义
 const props = defineProps({
@@ -190,7 +195,10 @@ const handleDelete = (item) => {
 }
 
 const confirmDelete = () => {
-	alert('删除项目:' + JSON.stringify(itemToDelete.value))
+	message.value.show({
+		type: 'success',
+		content: '删除项目:' + JSON.stringify(itemToDelete.value)
+	})
 	showDeleteModal.value = false
 	itemToDelete.value = null
 }
@@ -201,7 +209,12 @@ const cancelDelete = () => {
 }
 
 const saveEdit = (formData) => {
-	alert('保存的数据:' + JSON.stringify(formData))
+	message.value.show({
+		type: 'success',
+		content: '保存的数据:' + JSON.stringify(formData)
+	})
+	// 重新加载数据
+
 	showEditModal.value = false
 }
 

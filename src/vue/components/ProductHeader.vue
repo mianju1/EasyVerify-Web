@@ -61,11 +61,16 @@
     @save="handleSave"
     @cancel="handleCancel"
   />
+
+	<Message ref="message" />
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import EditModal from './EditModal.vue'
+import Message from './Message.vue'
+
+const message = ref(null)
 
 const props = defineProps({
   title: {
@@ -123,6 +128,12 @@ const handleSave = (formData) => {
   })
   document.querySelector('entities-crud').dispatchEvent(event)
   showAddModal.value = false
+
+	
+	message.value.show({
+		type: 'success',
+		content: JSON.stringify(formData)
+	})
 }
 
 // 处理取消
