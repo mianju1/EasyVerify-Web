@@ -11,14 +11,17 @@ const instance = axios.create({
 
 // 请求拦截器
 instance.interceptors.request.use(
-    (config) => {
+    (config) => {			
+
         try {
-            if (typeof window !== 'undefined' && window.localStorage) {
-                const token = window.localStorage.getItem('token');
-                if (token) {
-                    config.headers['Authorization'] = `Bearer ${token}`;
-                }
+
+					const token = localStorage.getItem('token');
+
+            if (!token) {						
+							const cookie = document.cookie;
+							token = cookie.split('token=')[1];							
             }
+						config.headers.Authorization = `Bearer ${token}`;
         } catch (error) {
             console.warn('无法访问 localStorage');
         }
@@ -34,16 +37,13 @@ instance.interceptors.response.use(
     (response) => {
         try {
             if (response?.data?.code === 401 && typeof window !== 'undefined') {
-                // 清除本地存储的 token
-                if (window.localStorage) {
-                    window.localStorage.removeItem('token');
-                }
+                // 清除 cookie
                 if (typeof document !== 'undefined') {
-                    document.cookie = 'token=; path=/;';
-                    document.cookie = 'username=; path=/;';
+                    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+                    document.cookie = 'username=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+                    // 重定向到登录页面
+                    window.location.href = '/authentication/login';
                 }
-                // 重定向到登录页面
-                window.location.href = '/authentication/login';
                 return Promise.reject('未授权访问');
             }
             return response;

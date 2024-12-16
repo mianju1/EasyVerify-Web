@@ -153,6 +153,7 @@ import { REPO_NAME } from '../app/constants.js';
 		}
 
 		try {
+			showError('正在登录中...');
 			const response = await api({
 				method: 'post',
 				url: '/api/auth/login',
@@ -172,8 +173,10 @@ import { REPO_NAME } from '../app/constants.js';
 					localStorage.setItem('token', response.data.data.developerToken);
 					// 存储用户名
 					localStorage.setItem('username', response.data.data.developerName);
-					document.cookie = `token=${response.data.data.developerToken}; path=/`;
-					document.cookie = `username=${response.data.data.developerName}; path=/`;
+					document.cookie = `token=${response.data.data.developerToken}; path=/; max-age=${24 * 60 * 60}`;
+					document.cookie = `username=${response.data.data.developerName}; path=/; max-age=${24 * 60 * 60}`;
+
+					
 					// 记住我功能
 					if (rememberMe) {
 						localStorage.setItem('rememberedUser', JSON.stringify({
@@ -193,7 +196,11 @@ import { REPO_NAME } from '../app/constants.js';
 				showError(response.data.message);
 			}
 		} catch (error) {
-			showError(response.data.message+"\n"+error);
+			if (error.message === 'Network Error') {
+				showError('网络连接错误,请检查网络设置');
+			} else {
+				showError(error.message);
+			}
 		}
 	});
 

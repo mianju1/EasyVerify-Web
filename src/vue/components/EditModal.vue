@@ -21,10 +21,14 @@
                 <!-- 文本输入框 -->
                 <template v-if="field.type === 'text'">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+                    <label class="block text-sm font-medium text-gray-700">
+                      {{ field.label }}
+                      <span v-if="field.required" class="text-red-500">*</span>
+                    </label>
                     <input type="text" 
                            v-model="formData[field.key]"
                            :disabled="field.disabled"
+                           :required="field.required"
                            :placeholder="field.placeholder"
                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm 
                                   focus:border-blue-500 focus:ring-blue-500
@@ -35,9 +39,13 @@
                 <!-- 文本域 -->
                 <template v-if="field.type === 'textarea'">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+                    <label class="block text-sm font-medium text-gray-700">
+                      {{ field.label }}
+                      <span v-if="field.required" class="text-red-500">*</span>
+                    </label>
                     <textarea v-model="formData[field.key]"
                             :disabled="field.disabled"
+                            :required="field.required"
                             :placeholder="field.placeholder"
                             :rows="field.rows || 3"
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm 
@@ -49,10 +57,14 @@
                 <!-- 数字输入框 -->
                 <template v-if="field.type === 'number'">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+                    <label class="block text-sm font-medium text-gray-700">
+                      {{ field.label }}
+                      <span v-if="field.required" class="text-red-500">*</span>
+                    </label>
                     <input type="number"
                            v-model="formData[field.key]"
                            :disabled="field.disabled"
+                           :required="field.required"
                            :min="field.min"
                            :max="field.max"
                            :step="field.step"
@@ -65,12 +77,17 @@
                 <!-- 选择框 -->
                 <template v-if="field.type === 'select'">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+                    <label class="block text-sm font-medium text-gray-700">
+                      {{ field.label }}
+                      <span v-if="field.required" class="text-red-500">*</span>
+                    </label>
                     <select v-model="formData[field.key]"
                             :disabled="field.disabled"
+                            :required="field.required"
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm 
                                    focus:border-blue-500 focus:ring-blue-500
                                    disabled:bg-gray-100 disabled:text-gray-500">
+                      <option value="" disabled>{{ field.placeholder }}</option>
                       <option v-for="option in field.options" 
                               :key="option.value" 
                               :value="option.value">
@@ -103,10 +120,12 @@
       </div>
     </div>
   </Transition>
+  <Message ref="message" />
 </template>
 
 <script setup>
 import { ref, watch, computed } from 'vue'
+import Message from './Message.vue'
 
 const props = defineProps({
   modelValue: {
@@ -162,11 +181,28 @@ const emit = defineEmits(['update:modelValue', 'save', 'cancel'])
 
 const formData = ref({})
 
+const message = ref(null)
+
 // 监听初始数据变化
 watch(() => props.initialData, (newVal) => {
-  if (newVal) {
-    formData.value = { ...newVal }
-  }
+  const data = { ...newVal }
+  
+  // 处理默认值
+  props.fields.forEach(field => {
+    // 如果字段值为空且是select类型
+    if (!data[field.key] && field.type === 'select') {
+      // 查找默认选项
+      const defaultOption = field.options?.find(opt => opt.default === true)
+      if (defaultOption) {
+        data[field.key] = defaultOption.value
+      } else if (field.options?.length > 0) {
+        // 如果没有设置默认值，则使用第一个选项
+        data[field.key] = field.options[0].value
+      }
+    }
+  })
+  
+  formData.value = data
 }, { immediate: true })
 
 // 确认按钮样式
@@ -178,6 +214,21 @@ const confirmButtonClass = computed(() => ({
 }))
 
 const handleSave = () => {
+  // 验证必填项
+  const invalidFields = props.fields.filter(field => 
+    field.required && !formData.value[field.key]
+  )
+  
+  if (invalidFields.length > 0) {
+    // 获取所有未填写的必填字段的标签名称
+    const fieldLabels = invalidFields.map(field => field.label).join('、')
+    message.value.show({
+      type: 'error',
+      content: `请填写必填字段：${fieldLabels}`
+    })
+    return
+  }
+  
   emit('save', formData.value)
 }
 
