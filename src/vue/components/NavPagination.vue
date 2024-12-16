@@ -110,35 +110,18 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:current', 'pageChange'])
+// 只使用一个事件
+const emit = defineEmits(['pageChange'])
 
 const handlePrevPage = () => {
-  if (props.current > 1) {
-    const newPage = props.current - 1
-    emit('update:current', newPage)
-    
-    // 触发自定义事件
-    const event = new CustomEvent('pageChange', {
-      detail: newPage,
-      bubbles: true,
-      composed: true
-    })
-    document.querySelector('entities-crud').dispatchEvent(event)
+  if (props.current > 1) {	
+    emit('pageChange', props.current - 1)
   }
 }
 
 const handleNextPage = () => {
-  if (props.current < Math.ceil(props.total / 10)) {
-    const newPage = props.current + 1
-    emit('update:current', newPage)
-    
-    // 触发自定义事件
-    const event = new CustomEvent('pageChange', {
-      detail: newPage,
-      bubbles: true,
-      composed: true
-    })
-    document.querySelector('entities-crud').dispatchEvent(event)
+  if (props.current < props.last) {
+    emit('pageChange', props.current + 1)
   }
 }
 </script>

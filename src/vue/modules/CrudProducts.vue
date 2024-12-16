@@ -43,7 +43,7 @@
         :total="total"
         :current="currentPage"
         :last="lastPage"
-        @page-change="handlePageChange"
+        @pageChange="handlePageChange"
       />
     </div>
 
@@ -334,13 +334,37 @@ const handleCopyError = () => {
 }
 
 // 确认删除
-const confirmDelete = () => {
-  message.value.show({
-    type: 'success',
-    content: '删除项目:' + JSON.stringify(itemToDelete.value)
-  })
-  showDeleteModal.value = false
-  itemToDelete.value = null
+const confirmDelete = async () => {
+  try {
+    loading.value = true
+    error.value = null
+		
+    
+    const response = await api({
+      method: 'post',
+      data: {
+        id: [itemToDelete.value.sid]
+      },
+      url: '/api/soft/delete-soft'
+    })
+
+    if (response.data.code === 200) {
+      message.value.show({
+        type: 'success',
+        content: '删除成功'
+      })
+      await fetchData()
+    } else {
+      throw new Error(response.data.message)
+    }
+  } catch (err) {
+    message.value.show({
+      type: 'error', 
+      content: err.message || '删除失败'
+    })
+  } finally {
+    showDeleteModal.value = false
+  }
 }
 
 // 取消删除
@@ -386,11 +410,38 @@ const cancelBatchEdit = () => {
 }
 
 // 确认批量删除
-const confirmBatchDelete = () => {
-  message.value.show({
-    type: 'success',
-    content: '选中删除的ID列表：' + JSON.stringify(selectedItems.value)
-  })
+const confirmBatchDelete = async () => {
+  try {
+    loading.value = true
+    error.value = null
+		
+    
+    const response = await api({
+      method: 'post',
+      data: {
+        id: selectedItems.value
+      },
+      url: '/api/soft/delete-soft'
+    })
+
+    if (response.data.code === 200) {
+      message.value.show({
+        type: 'success',
+        content: '批量删除成功'
+      })
+      await fetchData()
+    } else {
+      throw new Error(response.data.message)
+    }
+  } catch (err) {
+    message.value.show({
+      type: 'error', 
+      content: err.message || '批量删除失败'
+    })
+  } finally {
+    loading.value = false
+  }
+
   selectedItems.value = []
   showBatchDeleteModal.value = false
 }
@@ -443,8 +494,42 @@ const handleAdd = async (formData) => {
 }
 
 // 分页切换
-const handlePageChange = (newPage) => {
-  fetchData(newPage, 20)
+const handlePageChange = async (newPage) => {
+  
+  try {
+    loading.value = true
+    error.value = null
+    
+    const response = await api({
+      method: 'post',
+      data: {
+        currentPage: newPage,
+        pageSize: 20
+      },
+      url: '/api/soft/get-softs'
+    })
+
+    if (response.data.code === 200) {
+      currentPage.value = newPage
+      dataList.value = response.data.data.map((item) => ({
+        sname: item.sname,
+        sid: item.sid,
+        sdesc: item.sdesc,
+        sversion: item.sversion,
+        skey: item.skey,
+        scodetype: item.scodetype
+      }))
+      total.value = response.data.total || 100
+      lastPage.value = Math.ceil(total.value / 20)
+    } else {
+      error.value = response.data.message || '获取数据失败'
+    }
+  } catch (err) {
+    console.error('获取数据失败:', err)
+    error.value = '网络请求失败，请稍后重试'
+  } finally {
+    loading.value = false
+  }
 }
 
 // 初始加载数据
