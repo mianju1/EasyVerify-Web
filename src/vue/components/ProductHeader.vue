@@ -9,7 +9,7 @@
         <div class="flex items-center space-x-2 sm:space-x-3">
           <button
             v-if="showAddButton"
-            @click="handleAddClick"
+            @click="$emit('add-click')"
             class="inline-flex items-center justify-center w-1/2 px-3 py-2 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 sm:w-auto dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
             type="button"
           >
@@ -51,26 +51,10 @@
       </div>
     </div>
   </div>
-
-  <!-- 添加 EditModal 组件 -->
-  <EditModal
-    v-model="showAddModal"
-    title="添加新应用"
-    :fields="formFields"
-    type="primary"
-    @save="handleSave"
-    @cancel="handleCancel"
-  />
-
-	<Message ref="message" />
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import EditModal from './EditModal.vue'
-import Message from './Message.vue'
-
-const message = ref(null)
 
 const props = defineProps({
   title: {
@@ -92,52 +76,22 @@ const props = defineProps({
   searchPlaceholder: {
     type: String,
     default: '搜索...'
-  },
-  formFields: {
-    type: Array,
-    required: true
   }
 })
 
-const searchQuery = ref('')
-const showAddModal = ref(false)
+const emit = defineEmits(['search', 'add-click'])
 
-// 搜索处理函数
+const searchQuery = ref('')
+
 const handleSearch = () => {
   if (searchQuery.value.trim()) {
-    const event = new CustomEvent('search', {
-      detail: searchQuery.value.trim(),
-      bubbles: true,
-      composed: true
-    })
-    document.querySelector('entities-crud').dispatchEvent(event)
+    emit('search', searchQuery.value.trim())
   }
 }
-
-// 添加按钮点击事件
-const handleAddClick = () => {
-  showAddModal.value = true
-}
-
-// 处理保存
-const handleSave = (formData) => {
-  const event = new CustomEvent('add', {
-    detail: formData,
-    bubbles: true,
-    composed: true
-  })
-  document.querySelector('entities-crud').dispatchEvent(event)
-  showAddModal.value = false
-
-	
-	message.value.show({
-		type: 'success',
-		content: JSON.stringify(formData)
-	})
-}
-
-// 处理取消
-const handleCancel = () => {
-  showAddModal.value = false
-}
 </script>
+
+<style scoped>
+.dark button:hover svg {
+  @apply text-gray-300;
+}
+</style>

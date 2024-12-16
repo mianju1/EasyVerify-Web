@@ -19,14 +19,14 @@
 								</th>
 								<th scope="col" class="p-4 text-xs font-medium text-right text-gray-500 uppercase w-[200px]">
 									<div v-if="showBatchButtons" class="flex justify-end space-x-2">
-										<button @click="handleBatchEdit" 
+										<button @click="$emit('batch-edit')" 
 												class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300">
 											<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
 												<path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
 											</svg>
 											编辑
 										</button>
-										<button @click="handleBatchDelete"
+										<button @click="$emit('batch-delete')"
 												class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:ring-red-300">
 											<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
 												<path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
@@ -39,7 +39,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr v-for="(item, index) in props.dataList" :key="index" class="hover:bg-gray-100 dark:hover:bg-gray-700">
+							<tr v-for="(item, index) in dataList" :key="index" class="hover:bg-gray-100 dark:hover:bg-gray-700">
 								<td class="w-4 p-4">
 									<div class="flex items-center">
 										<input type="checkbox" class="w-4 h-4 border-gray-300 rounded bg-gray-50" :checked="selectedItems.includes(item.sid)" @change="toggleSelect(item.sid)" />
@@ -81,7 +81,7 @@
 								</td>
 								<td class="p-4 whitespace-nowrap text-right">
 									<div class="flex justify-end space-x-2">
-										<button @click="handleEdit(item)" 
+										<button @click="$emit('edit', item)" 
 												class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300">
 											<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
 												<path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
@@ -89,7 +89,7 @@
 											</svg>
 											编辑
 										</button>
-										<button @click="handleDelete(item)"
+										<button @click="$emit('delete', item)"
 												class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:ring-red-300">
 											<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
 												<path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
@@ -104,63 +104,12 @@
 				</div>
 			</div>
 		</div>
-
-		<!-- 使用确认弹窗组件 -->
-		<ConfirmModal
-			v-model="showDeleteModal"
-			level="error"
-			title="删除确认"
-			message="你确定要删除该应用吗？此操作不可撤销。"
-			@confirm="confirmDelete"
-			@cancel="cancelDelete"
-		/>
-
-		<!-- 添加编辑模态框 -->
-		<EditModal
-			v-model="showEditModal"
-			title="编辑应用信息"
-			:fields="formFields"
-			:initial-data="itemToEdit"
-			type="primary"
-			@save="saveEdit"
-			@cancel="cancelEdit"
-		/>
-
-		<!-- 批量编辑模态框 -->
-		<EditModal
-			v-if="showBatchEditModal"
-			v-model="showBatchEditModal"
-			title="批量编辑"
-			:fields="batchEditFields"
-			type="primary"
-			@save="saveBatchEdit"
-			@cancel="cancelBatchEdit"
-		/>
-
-		<!-- 批量删除确认框 -->
-		<ConfirmModal
-			v-model="showBatchDeleteModal"
-			title="批量删除确认"
-			:message="`确定要删除选中的 ${selectedItemsCount} 项数据吗？`"
-			level="error"
-			@confirm="confirmBatchDelete"
-			@cancel="cancelBatchDelete"
-		/>
 	</div>
-	<Message ref="message" />
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
-import api from '../../lib/axios'
-import ConfirmModal from './ConfirmModal.vue'
-import EditModal from './EditModal.vue'  // 导入编辑模态框组件
-import Message from './Message.vue'
 
-// 定义Message组件
-const message = ref(null)
-
-// Props 定义
 const props = defineProps({
 	headers: {
 		type: Array,
@@ -169,31 +118,44 @@ const props = defineProps({
 	dataList: {
 		type: Array,
 		required: true
+	},
+	headerMapping: {
+		type: Object,
+		required: true
+	},
+	codeTypeMapping: {
+		type: Object,
+		required: true
 	}
 })
 
-// 响应式状态
-const showDeleteModal = ref(false)
-const itemToDelete = ref(null)
-const showEditModal = ref(false)
-const itemToEdit = ref(null)
+const emit = defineEmits([
+	'edit',
+	'delete',
+	'batch-edit',
+	'batch-delete',
+	'selection-change',
+	'copy-success',
+	'copy-error'
+])
+
 const selectedItems = ref([])
 
-// 计算是否全选
 const isAllSelected = computed(() => {
 	return props.dataList.length > 0 && selectedItems.value.length === props.dataList.length
 })
 
-// 全选/取消全选
+const showBatchButtons = computed(() => selectedItems.value.length > 0)
+
 const toggleSelectAll = () => {
 	if (isAllSelected.value) {
 		selectedItems.value = []
 	} else {
 		selectedItems.value = props.dataList.map(item => item.sid)
 	}
+	emit('selection-change', selectedItems.value)
 }
 
-// 单个选择
 const toggleSelect = (sid) => {
 	const index = selectedItems.value.indexOf(sid)
 	if (index === -1) {
@@ -201,244 +163,41 @@ const toggleSelect = (sid) => {
 	} else {
 		selectedItems.value.splice(index, 1)
 	}
+	emit('selection-change', selectedItems.value)
 }
 
-// 批量编辑相关
-const showBatchEditModal = ref(false)
-
-// 定义批量编辑的字段
-const batchEditFields = [
-	{
-		key: 'sversion',
-		label: '版本号',
-		type: 'text',
-		placeholder: '请输入版本号'
-	},
-	{
-		key: 'sdesc',
-		label: '备注',
-		type: 'textarea',
-		placeholder: '请输入备注信息'
-	},
-	{
-		key: 'scodetype',
-		label: '登录形式',
-		type: 'select',
-		options: [
-			{ value: '0', label: '账号+密码' },
-			{ value: '1', label: '账号+密码+注册码' },
-			{ value: '2', label: '激活码' }
-		],
-		placeholder: '请选择登录形式'
-	}
-]
-
-// 批量编辑处理
-const handleBatchEdit = () => {
-	if (selectedItems.value.length > 0) {
-		showBatchEditModal.value = true
-	}
-}
-
-// 保存批量编辑
-const saveBatchEdit = (formData) => {
-	// 构建返回的数据格式
-	const editData = {}
-	selectedItems.value.forEach(sid => {
-		editData[sid] = formData
-	})
-
-	// 显示编辑的数据
-	message.value.show({
-		type: 'success',
-		content: '批量编辑数据：' + JSON.stringify(editData)
-	})
-	
-	showBatchEditModal.value = false
-	selectedItems.value = [] // 清空选择
-}
-
-const cancelBatchEdit = () => {
-	showBatchEditModal.value = false
-}
-
-// 批量删除相关
-const showBatchDeleteModal = ref(false)
-
-// 修改批量删除处理
-const handleBatchDelete = () => {
-	if (selectedItems.value.length > 0) {
-		showBatchDeleteModal.value = true
-	}
-}
-
-// 确认批量删除
-const confirmBatchDelete = () => {
-	message.value.show({
-		type: 'success',
-		content: '选中删除的ID列表：' + JSON.stringify(selectedItems.value)
-	})
-	selectedItems.value = [] // 清空选择
-	showBatchDeleteModal.value = false
-}
-
-// 取消批量删除
-const cancelBatchDelete = () => {
-	showBatchDeleteModal.value = false
-}
-
-// 定义表单字段
-const formFields = [
-	{
-		key: 'sname',
-		label: '程序名称',
-		type: 'text',
-		required: true,
-		placeholder: '请输入程序名称'
-	},
-	{
-		key: 'sid',
-		label: '程序ID',
-		type: 'text',
-		disabled: true
-	},
-	{
-		key: 'sversion',
-		label: '版本号',
-		type: 'text',
-		placeholder: '请输入版本号'
-	},
-	{
-		key: 'skey',
-		label: '密钥',
-		type: 'text',
-		disabled: true
-	},
-	{
-		key: 'sdesc',
-		label: '备注',
-		type: 'textarea',
-		rows: 3,
-		placeholder: '请输入备注信息'
-	},{
-		key: 'snotice',
-		label: '公告',	
-		type: 'textarea',
-		rows: 3,
-		placeholder: '请输入公告信息'
-	},{
-		key: 'scodetype',
-		label: '登录形式',
-		type: 'select',
-		required: true,
-		options: [
-			{ value: '0', label: '账号+密码', default: true },
-			{ value: '1', label: '账号+密码+注册码' },
-			{ value: '2', label: '激活码' }
-		],
-		placeholder: '请选择登录形式'
-	}
-]
-
-// 方法
 const getKeyByHeader = (header) => {
-	const headerToKey = {
-		'程序名称': 'sname',
-		'程序ID': 'sid',
-		'备注': 'sdesc',
-		'版本号': 'sversion',
-		'密钥': 'skey',
-		'登录形式': 'scodetype'
-	}
-	return headerToKey[header]
+	return props.headerMapping[header]
 }
 
 const formatCodeType = (type) => {
-	const codeTypes = {
-		'0': '账号+密码',
-		'1': '账号+密码+注册码',
-		'2': '激活码'
-	}
-	return codeTypes[type] || type
+	return props.codeTypeMapping[type] || type
 }
 
-const handleEdit = (item) => {
-	itemToEdit.value = { ...item }
-	showEditModal.value = true
-}
-
-const handleDelete = (item) => {
-	showDeleteModal.value = true
-	itemToDelete.value = item
-}
-
-const confirmDelete = () => {
-	message.value.show({
-		type: 'success',
-		content: '删除项目:' + JSON.stringify(itemToDelete.value)
-	})
-	showDeleteModal.value = false
-	itemToDelete.value = null
-}
-
-const cancelDelete = () => {
-	showDeleteModal.value = false
-	itemToDelete.value = null
-}
-
-const saveEdit = (formData) => {
-	message.value.show({
-		type: 'success',
-		content: '保存的数据:' + JSON.stringify(formData)
-	})
-	// 重新加载数据
-	showEditModal.value = false
-}
-
-const cancelEdit = () => {
-	showEditModal.value = false
-}
-
-// 添加标签样式类方法
 const getCodeTypeTagClass = (type) => {
 	const typeClasses = {
-		'0': 'bg-green-100 text-green-800', // 账号+密码
-		'1': 'bg-yellow-100 text-yellow-800', // 账号+密码+注册码
-		'2': 'bg-red-100 text-red-800' // 激活码
+		'0': 'bg-green-100 text-green-800',
+		'1': 'bg-yellow-100 text-yellow-800',
+		'2': 'bg-red-100 text-red-800'
 	}
 	return typeClasses[type] || 'bg-gray-100 text-gray-800'
 }
 
-// 添加计算属性来获取选中项数量
-const selectedItemsCount = computed(() => selectedItems.value.length)
-
-// 修改表头操作列的条件判断
-const showBatchButtons = computed(() => selectedItems.value.length > 0)
-
-// 复制到剪贴板功能
 const copyToClipboard = async (text) => {
 	try {
 		await navigator.clipboard.writeText(text)
-		message.value.show({
-			type: 'success',
-			content: '密钥已复制到剪贴板'
-		})
+		emit('copy-success')
 	} catch (err) {
-		message.value.show({
-			type: 'error',
-			content: '复制失败，请手动复制'
-		})
+		emit('copy-error')
 	}
 }
 </script>
 
-<style>
-/* 可选：添加过渡效果 */
+<style scoped>
 .inline-flex {
 	transition: all 0.3s;
 }
 
-/* 复制按钮悬停效果 */
 button:hover svg {
 	transform: scale(1.1);
 	transition: transform 0.2s;

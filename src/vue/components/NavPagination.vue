@@ -40,9 +40,9 @@
       <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
         当前 
         <span class="font-semibold text-gray-900 dark:text-white">
-          {{ current }} - {{ last }}
+          {{ current }} 页 - {{ last }} 页
         </span>
-        总 
+        总数 
         <span class="font-semibold text-gray-900 dark:text-white">
           {{ total }}
         </span>

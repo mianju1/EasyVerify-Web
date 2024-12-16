@@ -1,0 +1,479 @@
+<template>
+  <div class="entities-crud">
+    <div v-if="loading" class="flex justify-center items-center p-4">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+    </div>
+
+    <div v-else>
+      <ProductHeader 
+        :title="headerProps.title"
+        :button-text="headerProps.buttonText"
+        :show-search="headerProps.showSearch"
+        :search-placeholder="headerProps.searchPlaceholder"
+        :show-add-button="true"
+        @search="handleSearch"
+        @add-click="handleAddClick"
+      />
+      
+      <!-- 添加模态框 -->
+      <EditModal
+        v-model="showAddModal"
+        title="添加新应用"
+        :fields="formFields"
+        type="primary"
+        @save="handleAdd"
+        @cancel="() => showAddModal = false"
+      />
+      
+      <ShowEntity 
+        :headers="headers"
+        :dataList="dataList"
+        :headerMapping="headerMapping"
+        :codeTypeMapping="codeTypeMapping"
+        @edit="handleEdit"
+        @delete="handleDelete"
+        @batch-edit="handleBatchEdit"
+        @batch-delete="handleBatchDelete"
+        @selection-change="handleSelectionChange"
+        @copy-success="handleCopySuccess"
+        @copy-error="handleCopyError"
+      />
+
+      <NavPagination 
+        :total="total"
+        :current="currentPage"
+        :last="lastPage"
+        @page-change="handlePageChange"
+      />
+    </div>
+
+    <div v-if="error" class="text-red-500 p-4 text-center">
+      {{ error }}
+    </div>
+
+    <!-- 确认删除弹窗 -->
+    <ConfirmModal
+      v-model="showDeleteModal"
+      level="error"
+      title="删除确认"
+      message="你确定要删除该应用吗？此操作不可撤销。"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
+
+    <!-- 编辑模态框 -->
+    <EditModal
+      v-model="showEditModal"
+      title="编辑应用信息"
+      :fields="formFields"
+      :initial-data="itemToEdit"
+      type="primary"
+      @save="saveEdit"
+      @cancel="cancelEdit"
+    />
+
+    <!-- 批量编辑模态框 -->
+    <EditModal
+      v-if="showBatchEditModal"
+      v-model="showBatchEditModal"
+      title="批量编辑"
+      :fields="batchEditFields"
+      type="primary"
+      @save="saveBatchEdit"
+      @cancel="cancelBatchEdit"
+    />
+
+    <!-- 批量删除确认框 -->
+    <ConfirmModal
+      v-model="showBatchDeleteModal"
+      title="批量删除确认"
+      :message="`确定要删除选中的 ${selectedItems.length} 项数据吗？`"
+      level="error"
+      @confirm="confirmBatchDelete"
+      @cancel="cancelBatchDelete"
+    />
+  </div>
+  <Message ref="message" />
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import ShowEntity from '../components/ShowEntity.vue'
+import ProductHeader from '../components/ProductHeader.vue'
+import NavPagination from '../components/NavPagination.vue'
+import ConfirmModal from '../components/ConfirmModal.vue'
+import EditModal from '../components/EditModal.vue'
+import Message from '../components/Message.vue'
+import api from '../../lib/axios'
+import { log } from '../../../node_modules/astro/dist/core/logger/core'
+
+const message = ref(null)
+const currentPage = ref(1)
+const dataList = ref([])
+const loading = ref(false)
+const error = ref(null)
+const total = ref(0)
+const lastPage = ref(1)
+const selectedItems = ref([])
+
+// 模态框状态
+const showDeleteModal = ref(false)
+const showEditModal = ref(false)
+const showBatchEditModal = ref(false)
+const showBatchDeleteModal = ref(false)
+const itemToEdit = ref(null)
+const itemToDelete = ref(null)
+const showAddModal = ref(false)
+
+// 表头定义
+const headers = [
+  '程序名称',
+  '程序ID',
+  '备注', 
+  '版本号',
+  '密钥',
+  '登录形式'
+]
+
+// 表头映射
+const headerMapping = {
+  '程序名称': 'sname',
+  '程序ID': 'sid',
+  '备注': 'sdesc',
+  '版本号': 'sversion',
+  '密钥': 'skey',
+  '登录形式': 'scodetype'
+}
+
+// 登录形式映射
+const codeTypeMapping = {
+  '0': '账号+密码',
+  '1': '账号+密码+注册码',
+  '2': '激活码'
+}
+
+// 表单字段定义
+const formFields = [
+  {
+    key: 'sname',
+    label: '程序名称', 
+    type: 'text',
+    required: true,
+    placeholder: '请输入程序名称'
+  },
+  {
+    key: 'sdesc',
+    label: '备注',
+    type: 'textarea', 
+    rows: 3,
+    placeholder: '请输入备注信息'
+  },
+  {
+    key: 'sversion',
+    label: '版本号',
+    type: 'text',
+    required: true,
+    placeholder: '请输入版本号'
+  },
+  {
+    key: 'scodetype',
+    label: '登录形式',
+    type: 'select',
+    required: true,
+    options: [
+      { value: '0', label: '账号+密码' },
+      { value: '1', label: '账号+密码+注册码' },
+      { value: '2', label: '激活码' }
+    ]
+  }
+]
+
+// 批量编辑字段
+const batchEditFields = [
+  {
+    key: 'sversion',
+    label: '版本号',
+    type: 'text',
+    placeholder: '请输入版本号'
+  },
+  {
+    key: 'sdesc',
+    label: '备注',
+    type: 'textarea',
+    placeholder: '请输入备注信息'
+  },
+  {
+    key: 'scodetype',
+    label: '登录形式',
+    type: 'select',
+    options: [
+      { value: '0', label: '账号+密码' },
+      { value: '1', label: '账号+密码+注册码' },
+      { value: '2', label: '激活码' }
+    ],
+    placeholder: '请选择登录形式'
+  }
+]
+
+// header 属性
+const headerProps = {
+  title: "应用管理",
+  buttonText: "添加新应用",
+  showSearch: true,
+  searchPlaceholder: "搜索应用..."
+}
+
+// 获取数据
+const fetchData = async (currentPage = 1, pageSize = 20) => {
+  loading.value = true
+  error.value = null
+  
+  try {
+    const response = await api({
+      method: 'post',
+      data: {
+        currentPage: currentPage,
+        pageSize: pageSize
+      },
+      url: '/api/soft/get-softs'
+    })
+
+    if (response.data.code === 200) {
+      dataList.value = response.data.data.map((item) => ({
+        sname: item.sname,
+        sid: item.sid,
+        sdesc: item.sdesc,
+        sversion: item.sversion,
+        skey: item.skey,
+        scodetype: item.scodetype
+      }))
+      total.value = response.data.total || 100
+      lastPage.value = Math.ceil(total.value / pageSize)
+    } else {
+      error.value = response.data.message || '获取数据失败'
+    }
+  } catch (err) {
+    console.error('获取数据失败:', err)
+    error.value = '网络请求失败，请稍后重试'
+  } finally {
+    loading.value = false
+  }
+}
+
+// 搜索处理
+const handleSearch = async (searchQuery) => {
+  try {
+    loading.value = true
+    error.value = null
+    
+    const response = await api({
+      method: 'post',
+      data: {
+        currentPage: 1,
+        pageSize: 20,
+        keyword: searchQuery
+      },
+      url: '/api/soft/search'
+    })
+
+    if (response.data.code === 200) {
+      dataList.value = response.data.data
+      currentPage.value = 1
+    } else {
+      error.value = response.data.message || '搜索失败'
+    }
+  } catch (err) {
+    console.error('搜索失败:', err)
+    error.value = '搜索请求失败，请稍后重试'
+  } finally {
+    loading.value = false
+  }
+}
+
+// 编辑处理
+const handleEdit = (item) => {
+  itemToEdit.value = { ...item }
+  showEditModal.value = true
+}
+
+// 删除处理
+const handleDelete = (item) => {
+  itemToDelete.value = item
+  showDeleteModal.value = true
+}
+
+// 批量编辑处理
+const handleBatchEdit = () => {
+  showBatchEditModal.value = true
+}
+
+// 批量删除处理
+const handleBatchDelete = () => {
+  showBatchDeleteModal.value = true
+}
+
+// 选择变化处理
+const handleSelectionChange = (items) => {
+  selectedItems.value = items
+}
+
+// 复制成功处理
+const handleCopySuccess = () => {
+  message.value.show({
+    type: 'success',
+    content: '密钥已复制到剪贴板'
+  })
+}
+
+// 复制失败处理
+const handleCopyError = () => {
+  message.value.show({
+    type: 'error',
+    content: '复制失败，请手动复制'
+  })
+}
+
+// 确认删除
+const confirmDelete = () => {
+  message.value.show({
+    type: 'success',
+    content: '删除项目:' + JSON.stringify(itemToDelete.value)
+  })
+  showDeleteModal.value = false
+  itemToDelete.value = null
+}
+
+// 取消删除
+const cancelDelete = () => {
+  showDeleteModal.value = false
+  itemToDelete.value = null
+}
+
+// 保存编辑
+const saveEdit = (formData) => {
+  message.value.show({
+    type: 'success',
+    content: '保存的数据:' + JSON.stringify(formData)
+  })
+  showEditModal.value = false
+  fetchData()
+}
+
+// 取消编辑
+const cancelEdit = () => {
+  showEditModal.value = false
+}
+
+// 保存批量编辑
+const saveBatchEdit = (formData) => {
+  const editData = {}
+  selectedItems.value.forEach(sid => {
+    editData[sid] = formData
+  })
+
+  message.value.show({
+    type: 'success',
+    content: '批量编辑数据：' + JSON.stringify(editData)
+  })
+  
+  showBatchEditModal.value = false
+  selectedItems.value = []
+}
+
+// 取消批量编辑
+const cancelBatchEdit = () => {
+  showBatchEditModal.value = false
+}
+
+// 确认批量删除
+const confirmBatchDelete = () => {
+  message.value.show({
+    type: 'success',
+    content: '选中删除的ID列表：' + JSON.stringify(selectedItems.value)
+  })
+  selectedItems.value = []
+  showBatchDeleteModal.value = false
+}
+
+// 取消批量删除
+const cancelBatchDelete = () => {
+  showBatchDeleteModal.value = false
+}
+
+// 处理添加按钮点击
+const handleAddClick = () => {
+  showAddModal.value = true
+}
+
+// 处理添加操作
+const handleAdd = async (formData) => {
+  try {
+    loading.value = true
+    error.value = null
+    
+    const response = await api({
+      method: 'post',
+      data: {
+				name: formData.sname,
+				desc: formData.sdesc,
+				version: formData.sversion,
+				codetype: formData.scodetype
+			},
+      url: '/api/soft/add-soft'
+    })
+
+    if (response.data.code === 200) {
+      message.value.show({
+        type: 'success',
+        content: '添加成功'
+      })
+      await fetchData()
+    } else {
+      throw new Error(response.data.message)
+    }
+  } catch (err) {
+    message.value.show({
+      type: 'error',
+      content: err.message || '添加失败'
+    })
+  } finally {
+    loading.value = false
+    showAddModal.value = false
+  }
+}
+
+// 分页切换
+const handlePageChange = (newPage) => {
+  fetchData(newPage, 20)
+}
+
+// 初始加载数据
+onMounted(() => {
+  fetchData()
+})
+
+// 导出必要的属性和方法
+defineExpose({
+  fetchData
+})
+</script>
+
+<style scoped>
+.entities-crud {
+  min-height: 200px;
+  position: relative;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>
