@@ -224,18 +224,20 @@ const headerProps = {
 }
 
 // 获取数据
-const fetchData = async (currentPage = 1, pageSize = 20) => {
+const fetchData = async (keyword = '', currentPage = 1, pageSize = 20) => {
   loading.value = true
-  error.value = null
   
   try {
     const response = await api({
       method: 'post',
       data: {
-        currentPage: currentPage,
-        pageSize: pageSize
+        keyword: keyword,
+				page:{
+					currentPage: currentPage,
+					pageSize: pageSize
+				}
       },
-      url: '/api/soft/get-softs'
+      url: '/api/soft/seach-softs'
     })
 
     if (response.data.code === 200) {
@@ -250,11 +252,16 @@ const fetchData = async (currentPage = 1, pageSize = 20) => {
       total.value = response.data.total || 100
       lastPage.value = Math.ceil(total.value / pageSize)
     } else {
-      error.value = response.data.message || '获取数据失败'
+      message.value.show({
+        type: 'error',
+        content: response.data.message || '获取数据失败'
+      })
     }
   } catch (err) {
-    console.error('获取数据失败:', err)
-    error.value = '网络请求失败，请稍后重试'
+    message.value.show({
+      type: 'error',
+      content: '网络请求失败，请稍后重试'
+    })
   } finally {
     loading.value = false
   }
@@ -262,32 +269,7 @@ const fetchData = async (currentPage = 1, pageSize = 20) => {
 
 // 搜索处理
 const handleSearch = async (searchQuery) => {
-  try {
-    loading.value = true
-    error.value = null
-    
-    const response = await api({
-      method: 'post',
-      data: {
-        currentPage: 1,
-        pageSize: 20,
-        keyword: searchQuery
-      },
-      url: '/api/soft/search'
-    })
-
-    if (response.data.code === 200) {
-      dataList.value = response.data.data
-      currentPage.value = 1
-    } else {
-      error.value = response.data.message || '搜索失败'
-    }
-  } catch (err) {
-    console.error('搜索失败:', err)
-    error.value = '搜索请求失败，请稍后重试'
-  } finally {
-    loading.value = false
-  }
+	await fetchData(searchQuery, 1, 20)
 }
 
 // 编辑处理
@@ -337,7 +319,6 @@ const handleCopyError = () => {
 const confirmDelete = async () => {
   try {
     loading.value = true
-    error.value = null
 		
     
     const response = await api({
@@ -412,9 +393,7 @@ const cancelBatchEdit = () => {
 // 确认批量删除
 const confirmBatchDelete = async () => {
   try {
-    loading.value = true
-    error.value = null
-		
+    loading.value = true		
     
     const response = await api({
       method: 'post',
@@ -459,9 +438,7 @@ const handleAddClick = () => {
 // 处理添加操作
 const handleAdd = async (formData) => {
   try {
-    loading.value = true
-    error.value = null
-    
+    loading.value = true    
     const response = await api({
       method: 'post',
       data: {
@@ -498,7 +475,6 @@ const handlePageChange = async (newPage) => {
   
   try {
     loading.value = true
-    error.value = null
     
     const response = await api({
       method: 'post',
@@ -522,11 +498,16 @@ const handlePageChange = async (newPage) => {
       total.value = response.data.total || 100
       lastPage.value = Math.ceil(total.value / 20)
     } else {
-      error.value = response.data.message || '获取数据失败'
+      message.value.show({
+        type: 'error',
+        content: response.data.message || '获取数据失败'
+      })
     }
   } catch (err) {
-    console.error('获取数据失败:', err)
-    error.value = '网络请求失败，请稍后重试'
+    message.value.show({
+      type: 'error',
+      content: '网络请求失败，请稍后重试'
+    })
   } finally {
     loading.value = false
   }
