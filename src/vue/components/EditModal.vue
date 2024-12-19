@@ -243,6 +243,7 @@ const handleSave = () => {
   const invalidFields = props.fields.filter(field => 
     field.required && !formData.value[field.key]
   )
+
   
   if (invalidFields.length > 0) {
     // 获取所有未填写的必填字段的标签名称

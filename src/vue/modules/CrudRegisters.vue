@@ -7,7 +7,7 @@
 		<div v-else>
 			<ProductHeader :title="headerProps.title" :button-text="headerProps.buttonText"
 				:show-search="headerProps.showSearch" :search-placeholder="headerProps.searchPlaceholder"
-				:show-add-button="true" @search="handleSearch" @add-click="handleAddClick" />
+				:show-add-button="true" v-model:searchValue="searchQuery" @search="handleSearch" @add-click="handleAddClick" />
 
 			<!-- 添加模态框 -->
 			<EditModal v-model="showAddModal" title="添加新注册码" :fields="addFormFields" type="primary" @save="handleAdd"
@@ -104,6 +104,7 @@ const total = ref(0)
 const lastPage = ref(1)
 const selectedItems = ref([])
 const pageSize = ref(20)
+const searchQuery = ref('')
 // 模态框状态
 const showDeleteModal = ref(false)
 const showEditModal = ref(false)
@@ -160,7 +161,7 @@ const fetchProgramList = async () => {
 
 		if (response.data.code === 200) {
 			programList.value = response.data.data.map(item => ({
-				value: item.id,
+				value: item.sid,
 				label: item.name
 			}))
 		} else {
@@ -226,23 +227,23 @@ const addFormFields = [
 		type: 'select',
 		required: true,
 		options: [
-			{ value: 'normal', label: '普通激活码' },
-			{ value: 'special', label: '积分制激活码' }
+			{ value: 'normal', label: '普通激活码' }
+			// ,{ value: 'special', label: '积分制激活码' }
 		],
 		placeholder: '请选择激活码类型',
 		onChange: (value, formData) => {
 			// 当选择积分制激活码时，显示积分输入框
 			formData.showScoreField = value === 'special'
 		}
-	},
-	{
-		key: 'score',
-		label: '积分',
-		type: 'number',
-		min: 0,
-		placeholder: '请输入积分',
-		show: (formData) => formData.codeType === 'special' // 只在选择积分制激活码时显示
 	}
+	// ,{
+	// 	key: 'score',
+	// 	label: '积分',
+	// 	type: 'number',
+	// 	min: 0,
+	// 	placeholder: '请输入积分',
+	// 	show: (formData) => formData.codeType === 'special' // 只在选择积分制激活码时显示
+	// }
 ]
 
 
@@ -264,7 +265,7 @@ const formatTime = (timestamp) => {
 }
 
 // 获取数据
-const fetchData = async (keyword = '', currentPage = 1, pageSize = 20) => {
+const fetchData = async (keyword = '', page = 1, pageSize = 20) => {
 	loading.value = true
 
 	try {
@@ -274,7 +275,7 @@ const fetchData = async (keyword = '', currentPage = 1, pageSize = 20) => {
 				keyword: keyword,
 				type: 1,
 				page: {
-					currentPage: currentPage,
+					currentPage: page,
 					pageSize: pageSize
 				}
 			},
@@ -292,6 +293,7 @@ const fetchData = async (keyword = '', currentPage = 1, pageSize = 20) => {
 			}))
 			total.value = response.data.total || 0
 			lastPage.value = Math.ceil(total.value / pageSize)
+			currentPage.value = page
 		} else {
 			message.value.show({
 				type: 'error',
@@ -299,6 +301,7 @@ const fetchData = async (keyword = '', currentPage = 1, pageSize = 20) => {
 			})
 		}
 	} catch (err) {
+		alert(err)
 		message.value.show({
 			type: 'error',
 			content: '网络请求失败，请稍后重试'
@@ -309,8 +312,9 @@ const fetchData = async (keyword = '', currentPage = 1, pageSize = 20) => {
 }
 
 // 搜索处理
-const handleSearch = async (searchQuery) => {
-	await fetchData(searchQuery, 1, 20)
+const handleSearch = async (query) => {
+	searchQuery.value = query  // 保存搜索关键字
+	await fetchData(query, 1, pageSize.value)
 }
 
 
@@ -374,7 +378,7 @@ const confirmDelete = async () => {
 				type: 'success',
 				content: '删除成功'
 			})
-			await fetchData()
+			await fetchData(searchQuery.value, currentPage.value, pageSize.value)
 		} else {
 			throw new Error(response.data.message)
 		}
@@ -413,7 +417,7 @@ const confirmBatchDelete = async () => {
 				type: 'success',
 				content: '批量删除成功'
 			})
-			await fetchData('', currentPage.value, 20)
+			await fetchData(searchQuery.value, currentPage.value, pageSize.value)
 		} else {
 			throw new Error(response.data.message)
 		}
@@ -445,15 +449,37 @@ const handleAddClick = async () => {
 const handleAdd = async (formData) => {
 	try {
 		loading.value = true
+		
+		// 检查必填字段
+		if (!formData.program || !formData.duration || !formData.quantity || !formData.codeType) {
+			message.value.show({
+				type: 'error',
+				content: '请填写所有必填字段'
+			})
+			return
+		}
+
+		// 构造请求数据
+		const requestData = {
+			sid: formData.program,
+			timeType: {
+				'hour': '0',
+				'day': '1', 
+				'week': '2',
+				'month': '3',
+				'season': '4',
+				'year': '5'
+			}[formData.duration],
+			num: formData.quantity,
+			codeType: 1,  // 注册码固定为1 激活码为2
+			scores: formData.score || -1,
+			isActive: formData.activateNow || false
+		}
+
 		const response = await api({
 			method: 'post',
-			data: {
-				name: formData.sname,
-				desc: formData.sdesc,
-				version: formData.sversion,
-				codetype: formData.scodetype
-			},
-			url: '/api/soft/add-soft'
+			data: requestData,
+			url: '/api/code/add-code'
 		})
 
 		if (response.data.code === 200) {
@@ -461,7 +487,7 @@ const handleAdd = async (formData) => {
 				type: 'success',
 				content: '添加成功'
 			})
-			await fetchData()
+			await fetchData(searchQuery.value, currentPage.value, pageSize.value)
 		} else {
 			throw new Error(response.data.message)
 		}
@@ -478,8 +504,8 @@ const handleAdd = async (formData) => {
 
 // 分页切换
 const handlePageChange = async (newPage) => {
-	await fetchData(searchQuery.value, newPage, 20)
-
+	currentPage.value = newPage
+	await fetchData(searchQuery.value, newPage, pageSize.value)
 }
 
 // 初始加载数据

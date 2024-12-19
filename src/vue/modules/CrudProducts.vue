@@ -11,6 +11,7 @@
         :show-search="headerProps.showSearch"
         :search-placeholder="headerProps.searchPlaceholder"
         :show-add-button="true"
+        v-model:searchValue="searchQuery"
         @search="handleSearch"
         @add-click="handleAddClick"
       />
@@ -151,7 +152,7 @@ const total = ref(0)
 const lastPage = ref(1)
 const selectedItems = ref([])
 const pageSize = ref(20)
-// 模态框状态
+// 模态框状���
 const showDeleteModal = ref(false)
 const showEditModal = ref(false)
 const showBatchEditModal = ref(false)
@@ -288,8 +289,11 @@ const headerProps = {
   searchPlaceholder: "搜索应用..."
 }
 
+// 添加搜索关键字的响应式变量
+const searchQuery = ref('')
+
 // 获取数据
-const fetchData = async (keyword = '', currentPage = 1, pageSize = 20) => {
+const fetchData = async (keyword = '', page = 1, pageSize = 20) => {
   loading.value = true
   
   try {
@@ -297,10 +301,10 @@ const fetchData = async (keyword = '', currentPage = 1, pageSize = 20) => {
       method: 'post',
       data: {
         keyword: keyword,
-				page:{
-					currentPage: currentPage,
-					pageSize: pageSize
-				}
+        page: {
+          currentPage: page,
+          pageSize: pageSize
+        }
       },
       url: '/api/soft/seach-softs'
     })
@@ -310,13 +314,14 @@ const fetchData = async (keyword = '', currentPage = 1, pageSize = 20) => {
         sname: item.sname,
         sid: item.sid,
         sdesc: item.sdesc,
-				snotice: item.snotice,
+        snotice: item.snotice,
         sversion: item.sversion,
         skey: item.skey,
         scodetype: item.scodetype
       }))
       total.value = response.data.total || 0
       lastPage.value = Math.ceil(total.value / pageSize)
+      currentPage.value = page
     } else {
       message.value.show({
         type: 'error',
@@ -334,8 +339,10 @@ const fetchData = async (keyword = '', currentPage = 1, pageSize = 20) => {
 }
 
 // 搜索处理
-const handleSearch = async (searchQuery) => {
-	await fetchData(searchQuery, 1, 20)
+const handleSearch = async (query) => {
+  searchQuery.value = query  // 保存搜索关键字
+  currentPage.value = 1  // 搜索时重置到第一页
+  await fetchData(query, 1, pageSize.value)
 }
 
 // 编辑处理
@@ -400,7 +407,7 @@ const confirmDelete = async () => {
         type: 'success',
         content: '删除成功'
       })
-      await fetchData()
+      await fetchData(searchQuery.value, currentPage.value, pageSize.value)
     } else {
       throw new Error(response.data.message)
     }
@@ -442,7 +449,7 @@ const saveEdit = async (formData) => {
 				type: 'success',
 				content: '编辑成功'
 			})
-			await fetchData('',currentPage.value, 20)
+			await fetchData(searchQuery.value, currentPage.value, pageSize.value)
 		}else{
 			message.value.show({
 				type: 'error',
@@ -490,7 +497,7 @@ const saveBatchEdit = async (formData) => {
 				type: 'success',
 				content: '批量编辑成功'
 			})
-			await fetchData()
+			await fetchData(searchQuery.value, currentPage.value, pageSize.value)
 		}else{
 			message.value.show({
 				type: 'error',
@@ -534,7 +541,7 @@ const confirmBatchDelete = async () => {
         type: 'success',
         content: '批量删除成功'
       })
-      await fetchData('',currentPage.value, 20)
+      await fetchData(searchQuery.value, currentPage.value, pageSize.value)
     } else {
       throw new Error(response.data.message)
     }
@@ -581,7 +588,7 @@ const handleAdd = async (formData) => {
         type: 'success',
         content: '添加成功'
       })
-      await fetchData()
+      await fetchData(searchQuery.value, currentPage.value, pageSize.value)
     } else {
       throw new Error(response.data.message)
     }
@@ -598,8 +605,8 @@ const handleAdd = async (formData) => {
 
 // 分页切换
 const handlePageChange = async (newPage) => {
-	await fetchData(searchQuery.value,newPage, 20)
-
+  currentPage.value = newPage
+  await fetchData(searchQuery.value, newPage, pageSize.value)
 }
 
 // 初始加载数据
