@@ -95,6 +95,7 @@ import ConfirmModal from './ConfirmModal.vue'
 import Message from './Message.vue'
 import api from '../../lib/axios'
 import { log } from '../../../node_modules/astro/dist/core/logger/core'
+import { e } from '../../../dist/_astro/runtime-core.esm-bundler.C2oPSN2g'
 
 // 数据
 const userId = ref('')
@@ -120,7 +121,8 @@ const isPasswordCodeCountingDown = ref(false)
 
 // 方法
 const getInfo = async () => {
-	const response = await api({
+	try{
+		const response = await api({
 		method: 'get',
 		url: '/api/dev/info',
 		params: {
@@ -130,6 +132,17 @@ const getInfo = async () => {
 	if (response.data.code === 200) {
 		userId.value = response.data.data.d_id
 		email.value = response.data.data.d_mail
+	} else {
+		message.value.show({
+			type: 'error',
+				content: response.data.message
+			})
+		}
+	} catch (error) {
+		message.value.show({
+			type: 'error',
+			content: error.response?.data?.message || '获取用户信息失败,请检查网络'
+		})
 	}
 }
 

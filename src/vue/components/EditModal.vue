@@ -18,84 +18,104 @@
           <div class="p-6 max-h-[60vh] overflow-y-auto">
             <form class="space-y-4">
               <div v-for="field in fields" :key="field.key">
-                <!-- 文本输入框 -->
-                <template v-if="field.type === 'text'">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700">
-                      {{ field.label }}
-                      <span v-if="field.required" class="text-red-500">*</span>
-                    </label>
-                    <input type="text" 
-                           v-model="formData[field.key]"
-                           :disabled="field.disabled"
-                           :required="field.required"
-                           :placeholder="field.placeholder"
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm 
-                                  focus:border-blue-500 focus:ring-blue-500
-                                  disabled:bg-gray-100 disabled:text-gray-500" />
-                  </div>
-                </template>
+                <!-- 添加 v-show 条件，但只应用于有 show 属性的字段 -->
+                <div v-show="!field.show || field.show(formData)">
+                  <!-- 文本输入框 -->
+                  <template v-if="field.type === 'text'">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700">
+                        {{ field.label }}
+                        <span v-if="field.required" class="text-red-500">*</span>
+                      </label>
+                      <input type="text" 
+                             v-model="formData[field.key]"
+                             :disabled="field.disabled"
+                             :required="field.required"
+                             :placeholder="field.placeholder"
+                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                                    focus:border-blue-500 focus:ring-blue-500
+                                    disabled:bg-gray-100 disabled:text-gray-500" />
+                    </div>
+                  </template>
 
-                <!-- 文本域 -->
-                <template v-if="field.type === 'textarea'">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700">
-                      {{ field.label }}
-                      <span v-if="field.required" class="text-red-500">*</span>
-                    </label>
-                    <textarea v-model="formData[field.key]"
-                            :disabled="field.disabled"
-                            :required="field.required"
-                            :placeholder="field.placeholder"
-                            :rows="field.rows || 3"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm 
-                                   focus:border-blue-500 focus:ring-blue-500
-                                   disabled:bg-gray-100 disabled:text-gray-500"></textarea>
-                  </div>
-                </template>
+                  <!-- 文本域 -->
+                  <template v-if="field.type === 'textarea'">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700">
+                        {{ field.label }}
+                        <span v-if="field.required" class="text-red-500">*</span>
+                      </label>
+                      <textarea v-model="formData[field.key]"
+                              :disabled="field.disabled"
+                              :required="field.required"
+                              :placeholder="field.placeholder"
+                              :rows="field.rows || 3"
+                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                                     focus:border-blue-500 focus:ring-blue-500
+                                     disabled:bg-gray-100 disabled:text-gray-500"></textarea>
+                    </div>
+                  </template>
 
-                <!-- 数字输入框 -->
-                <template v-if="field.type === 'number'">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700">
-                      {{ field.label }}
-                      <span v-if="field.required" class="text-red-500">*</span>
-                    </label>
-                    <input type="number"
-                           v-model="formData[field.key]"
-                           :disabled="field.disabled"
-                           :required="field.required"
-                           :min="field.min"
-                           :max="field.max"
-                           :step="field.step"
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm 
-                                  focus:border-blue-500 focus:ring-blue-500
-                                  disabled:bg-gray-100 disabled:text-gray-500" />
-                  </div>
-                </template>
+                  <!-- 数字输入框 -->
+                  <template v-if="field.type === 'number'">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700">
+                        {{ field.label }}
+                        <span v-if="field.required" class="text-red-500">*</span>
+                      </label>
+                      <input type="number"
+                             v-model="formData[field.key]"
+                             :disabled="field.disabled"
+                             :required="field.required"
+                             :min="field.min"
+                             :max="field.max"
+                             :step="field.step"
+                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                                    focus:border-blue-500 focus:ring-blue-500
+                                    disabled:bg-gray-100 disabled:text-gray-500" />
+                    </div>
+                  </template>
 
-                <!-- 选择框 -->
-                <template v-if="field.type === 'select'">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700">
-                      {{ field.label }}
-                      <span v-if="field.required" class="text-red-500">*</span>
-                    </label>
-                    <select v-model="formData[field.key]"
-                            :disabled="field.disabled"
-                            :required="field.required"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm 
-                                   focus:border-blue-500 focus:ring-blue-500
-                                   disabled:bg-gray-100 disabled:text-gray-500">
-                      <option value="" disabled>{{ field.placeholder }}</option>
-                      <option v-for="option in field.options" 
-                              :key="option.value" 
-                              :value="option.value">
-                        {{ option.label }}
-                      </option>
-                    </select>
-                  </div>
-                </template>
+                  <!-- 选择框 -->
+                  <template v-if="field.type === 'select'">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700">
+                        {{ field.label }}
+                        <span v-if="field.required" class="text-red-500">*</span>
+                      </label>
+                      <select v-model="formData[field.key]"
+                              :disabled="field.disabled"
+                              :required="field.required"
+                              @change="handleSelectChange(field, $event.target.value)"
+                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                                     focus:border-blue-500 focus:ring-blue-500
+                                     disabled:bg-gray-100 disabled:text-gray-500">
+                        <option value="" disabled>{{ field.placeholder || '请选择' }}</option>
+                        <option v-for="option in (field.options || [])" 
+                                :key="option.value" 
+                                :value="option.value">
+                          {{ option.label }}
+                        </option>
+                      </select>
+                    </div>
+                  </template>
+
+                  <!-- 复选框 -->
+                  <template v-if="field.type === 'checkbox'">
+                    <div class="flex items-center">
+                      <input type="checkbox"
+                             v-model="formData[field.key]"
+                             :id="field.key"
+                             :disabled="field.disabled"
+                             class="h-4 w-4 text-blue-600 rounded border-gray-300 
+                                    focus:ring-blue-500 focus:ring-2
+                                    disabled:bg-gray-100 disabled:text-gray-500" />
+                      <label :for="field.key" class="ml-2 block text-sm font-medium text-gray-700">
+                        {{ field.label }}
+                      </label>
+                    </div>
+                  </template>
+                </div>
               </div>
             </form>
           </div>
@@ -139,7 +159,7 @@ const props = defineProps({
   fields: {
     type: Array,
     required: true,
-    // fields的结构示例:
+    // fields的格式示例:
     // [{
     //   key: 'name',           // 字段键名
     //   label: '名称',         // 显示标签
@@ -189,21 +209,26 @@ watch(() => props.initialData, (newVal) => {
   
   // 处理默认值
   props.fields.forEach(field => {
-    // 如果字段值为空且是select类型
-    if (!data[field.key] && field.type === 'select') {
-      // 查找默认选项
-      const defaultOption = field.options?.find(opt => opt.default === true)
-      if (defaultOption) {
-        data[field.key] = defaultOption.value
-      } else if (field.options?.length > 0) {
-        // 如果没有设置默认值，则使用第一个选项
-        data[field.key] = field.options[0].value
+    // 修复：先判断字段是否存在
+    if (field.type === 'select') {
+      if (data[field.key] === undefined || data[field.key] === '') {
+        // 查找默认选项
+        const defaultOption = field.options?.find(opt => opt.default === true)
+        if (defaultOption) {
+          data[field.key] = defaultOption.value
+        } else if (field.options?.length > 0) {
+          // 如果没有设置默认值，则使用第一个选项
+          data[field.key] = field.options[0].value
+        } else {
+          // 如果没有选项，设置为空字符串
+          data[field.key] = ''
+        }
       }
     }
   })
   
   formData.value = data
-}, { immediate: true })
+}, { immediate: true, deep: true })
 
 // 确认按钮样式
 const confirmButtonClass = computed(() => ({
@@ -234,6 +259,13 @@ const handleSave = () => {
 
 const handleCancel = () => {
   emit('cancel')
+}
+
+// 修改 select 处理部分
+const handleSelectChange = (field, value) => {
+  if (field.onChange) {
+    field.onChange(value, formData.value)
+  }
 }
 </script>
 

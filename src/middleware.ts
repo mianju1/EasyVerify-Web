@@ -18,6 +18,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 	// 获取 token (注意: localStorage 只在浏览器端可用)
 	const token = context.cookies.get('token')?.value;
 	const username = context.cookies.get('username')?.value;
+	
 
 
 	// 如果已登录且访问以下页面，重定向到 主页

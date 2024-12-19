@@ -199,7 +199,7 @@ import { REPO_NAME } from '../app/constants.js';
 			if (error.message === 'Network Error') {
 				showError('网络连接错误,请检查网络设置');
 			} else {
-				showError(error.message);
+				showError(error);
 			}
 		}
 	});

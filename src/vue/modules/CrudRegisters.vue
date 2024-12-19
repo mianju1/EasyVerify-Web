@@ -18,7 +18,7 @@
       <!-- 添加模态框 -->
       <EditModal
         v-model="showAddModal"
-        title="添加新应用"
+        title="添加新注册码"
         :fields="addFormFields"
         type="primary"
         @save="handleAdd"
@@ -29,27 +29,44 @@
         :headers="headers"
         :dataList="dataList"
         :headerMapping="headerMapping"
-        :id-field="'sid'"
+        :id-field="'code'"
         @edit="handleEdit"
         @delete="handleDelete"
         @batch-edit="handleBatchEdit"
         @batch-delete="handleBatchDelete"
-        @selection-change="handleSelectionChange"
-      >
-        <!-- 自定义程序名称列 -->
-        <template #sname="{ value }">
-          <span class="font-medium text-gray-900">{{ value }}</span>
+        @selection-change="handleSelectionChange">
+        
+        <template #timeType="{ value }">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800">
+            {{ timeTypeMapping[value] || value }}
+          </span>
         </template>
+        
 
-        <!-- 自定义版本号列 -->
-        <template #sversion="{ value }">
+				<!-- 自定义使用时间列 -->
+				<template #useTime="{ value }">
           <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800">
             {{ value }}
           </span>
         </template>
+        
+				<!-- 自定义到期时间列 -->
+        <template #expireTime="{ value }">
+          <div class="flex items-center space-x-2">
+            <span :class="[
+              'inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium',
+              isExpired(value) ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+            ]">
+              {{ value || '未设置' }}
+            </span>
+            <span v-if="isExpired(value)" class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-red-100 text-red-800">
+              已到期
+            </span>
+          </div>
+        </template>
 
-        <!-- 自定义密钥列 -->
-        <template #skey="{ value }">
+				<!-- 自定义激活码列 -->
+        <template #code="{ value }">
           <div class="flex items-center space-x-2">
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-purple-100 text-purple-800">
               {{ value }}
@@ -57,7 +74,7 @@
             <button 
               @click="copyToClipboard(value)"
               class="p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
-              title="复制密钥">
+              title="复制激活码">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                     d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
@@ -66,12 +83,6 @@
           </div>
         </template>
 
-        <!-- 自定义登录形式列 -->
-        <template #scodetype="{ value }">
-          <span :class="getCodeTypeTagClass(value)" class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium">
-            {{ codeTypeMapping[value] || value }}
-          </span>
-        </template>
       </ShowEntity>
 
       <NavPagination 
@@ -163,61 +174,102 @@ const showAddModal = ref(false)
 // 表头定义
 const headers = [
   '程序名称',
-  '备注', 
-  '版本号',
-  '密钥',
-  '登录形式'
+  '激活码',
+	'使用时间',
+	'到期时间',
+	'卡类型'
 ]
 
 // 表头映射
 const headerMapping = {
   '程序名称': 'sname',
-  '备注': 'sdesc',
-  '版本号': 'sversion',
-  '密钥': 'skey',
-  '登录形式': 'scodetype'
+  '激活码': 'code',
+	'使用时间': 'useTime',
+	'到期时间': 'expireTime',
+	'卡类型': 'timeType'
 }
 
-// 登录形式映射
-const codeTypeMapping = {
-  '0': '账号+密码',
-  '1': '账号+密码+注册码',
-  '2': '激活码'
+// 卡类型映射
+const timeTypeMapping = {
+  "0": '小时卡',
+  "1": '日卡',
+  "2": '周卡',
+  "3": '月卡',
+  "4": '季卡',
+  "5": '年卡'
 }
 
-// 添加表单字段定义
+// 添加一个新的 ref 存储程序列表
+const programList = ref([])
+
+// 获取程序列表的函数
+const fetchProgramList = async () => {
+  	//123
+}
+
+// 修改添加表单字段定义
 const addFormFields = [
   {
-    key: 'sname',
-    label: '程序名称', 
-    type: 'text',
-    placeholder: '请输入程序名称',
-		required: true
-  },
-  {
-    key: 'sdesc',
-    label: '备注',
-    type: 'textarea', 
-    rows: 3,
-    placeholder: '请输入备注信息'
-  },
-  {
-    key: 'sversion',
-    label: '版本号',
-    type: 'text',
+    key: 'program',
+    label: '选择程序',
+    type: 'select',
+    get options() {
+      return programList.value
+    },
     required: true,
-    placeholder: '请输入版本号'
+    placeholder: '请选择程序'
   },
   {
-    key: 'scodetype',
-    label: '登录形式',
+    key: 'duration',
+    label: '有效时间',
     type: 'select',
     required: true,
     options: [
-      { value: '0', label: '账号+密码' },
-      { value: '1', label: '账号+密码+注册码' },
-      { value: '2', label: '激活码' }
-    ]
+      { value: 'hour', label: '小时卡' },
+      { value: 'day', label: '日卡' },
+      { value: 'week', label: '周卡' },
+      { value: 'month', label: '月卡' },
+      { value: 'season', label: '季卡' },
+      { value: 'year', label: '年卡' }
+    ],
+    placeholder: '请选择有效时间'
+  },
+  {
+    key: 'activateNow',
+    label: '立即激活',
+    type: 'checkbox'
+  },
+  {
+    key: 'quantity',
+    label: '生成数量',
+    type: 'number',
+    required: true,
+    min: 1,
+    placeholder: '请输入生成数量'
+  },
+  {
+    key: 'codeType',
+    label: '激活码类型',
+    type: 'select',
+    required: true,
+    options: [
+      { value: 'normal', label: '普通激活码' },
+      { value: 'special', label: '积分制激活码' }
+    ],
+    placeholder: '请选择激活码类型',
+    onChange: (value, formData) => {
+      // 当选择积分制激活码时，显示积分输入框
+      formData.showScoreField = value === 'special'
+    }
+  },
+  {
+    key: 'score',
+    label: '积分',
+    type: 'number',
+    min: 0,
+    required: true,
+    placeholder: '请输入积分',
+    show: (formData) => formData.codeType === 'special' // 只在选择积分制激活码时显示
   }
 ]
 
@@ -293,10 +345,15 @@ const batchEditFields = [
 
 // header 属性
 const headerProps = {
-  title: "应用管理",
-  buttonText: "添加新应用",
+  title: "注册码管理",
+  buttonText: "添加注册码",
   showSearch: true,
-  searchPlaceholder: "搜索应用..."
+  searchPlaceholder: "搜索注册码..."
+}
+
+// 时间戳转为当前时间
+const formatTime = (timestamp) => {
+  return new Date(timestamp).toLocaleString()
 }
 
 // 获取数据
@@ -308,23 +365,22 @@ const fetchData = async (keyword = '', currentPage = 1, pageSize = 20) => {
       method: 'post',
       data: {
         keyword: keyword,
+				type: 1,
 				page:{
 					currentPage: currentPage,
 					pageSize: pageSize
 				}
       },
-      url: '/api/soft/seach-softs'
+      url: '/api/code/seach-code'
     })
 
     if (response.data.code === 200) {
       dataList.value = response.data.data.map((item) => ({
-        sname: item.sname,
-        sid: item.sid,
-        sdesc: item.sdesc,
-				snotice: item.snotice,
-        sversion: item.sversion,
-        skey: item.skey,
-        scodetype: item.scodetype
+        sname: item.name,
+        code: item.code,
+        useTime: formatTime(item.useTime),
+        expireTime: formatTime(item.expired),
+        timeType: item.timeType
       }))
       total.value = response.data.total || 0
       lastPage.value = Math.ceil(total.value / pageSize)
@@ -376,12 +432,20 @@ const handleSelectionChange = (items) => {
   selectedItems.value = items
 }
 
-// 复制成功处理
-const handleCopySuccess = () => {
-  message.value.show({
-    type: 'success',
-    content: '密钥已复制到剪贴板'
-  })
+// 复制到剪贴板功能
+const copyToClipboard = async (text) => {
+  try {
+    await navigator.clipboard.writeText(text)
+    message.value.show({
+      type: 'success',
+      content: '密钥已复制到剪贴板'
+    })
+  } catch (err) {
+    message.value.show({
+      type: 'error',
+      content: '复制失败，请手动复制'
+    })
+  }
 }
 
 // 复制失败处理
@@ -568,7 +632,8 @@ const cancelBatchDelete = () => {
 }
 
 // 处理添加按钮点击
-const handleAddClick = () => {
+const handleAddClick = async () => {
+  await fetchProgramList()
   showAddModal.value = true
 }
 
@@ -616,6 +681,7 @@ const handlePageChange = async (newPage) => {
 // 初始加载数据
 onMounted(() => {
   fetchData()
+  fetchProgramList()
 })
 
 // 导出必要的属性和方法
@@ -623,30 +689,12 @@ defineExpose({
   fetchData
 })
 
-// 复制到剪贴板功能
-const copyToClipboard = async (text) => {
-  try {
-    await navigator.clipboard.writeText(text)
-    message.value.show({
-      type: 'success',
-      content: '密钥已复制到剪贴板'
-    })
-  } catch (err) {
-    message.value.show({
-      type: 'error',
-      content: '复制失败，请手动复制'
-    })
-  }
-}
-
-// 获取登录形式标签样式
-const getCodeTypeTagClass = (type) => {
-  const typeClasses = {
-    '0': 'bg-green-100 text-green-800',
-    '1': 'bg-yellow-100 text-yellow-800',
-    '2': 'bg-red-100 text-red-800'
-  }
-  return typeClasses[type] || 'bg-gray-100 text-gray-800'
+// 判断是否已过期
+const isExpired = (dateString) => {
+  if (!dateString) return false;
+  const expireDate = new Date(dateString);
+  const now = new Date();
+  return expireDate < now;
 }
 </script>
 
