@@ -1,145 +1,87 @@
 <template>
-  <div class="entities-crud">
-    <div v-if="loading" class="flex justify-center items-center p-4">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-    </div>
+	<div class="entities-crud">
+		<div v-if="loading" class="flex justify-center items-center p-4">
+			<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+		</div>
 
-    <div v-else>
-      <ProductHeader 
-        :title="headerProps.title"
-        :button-text="headerProps.buttonText"
-        :show-search="headerProps.showSearch"
-        :search-placeholder="headerProps.searchPlaceholder"
-        :show-add-button="true"
-        @search="handleSearch"
-        @add-click="handleAddClick"
-      />
-      
-      <!-- 添加模态框 -->
-      <EditModal
-        v-model="showAddModal"
-        title="添加新注册码"
-        :fields="addFormFields"
-        type="primary"
-        @save="handleAdd"
-        @cancel="() => showAddModal = false"
-      />
-      
-      <ShowEntity 
-        :headers="headers"
-        :dataList="dataList"
-        :headerMapping="headerMapping"
-        :id-field="'code'"
-        @edit="handleEdit"
-        @delete="handleDelete"
-        @batch-edit="handleBatchEdit"
-        @batch-delete="handleBatchDelete"
-        @selection-change="handleSelectionChange">
-        
-        <template #timeType="{ value }">
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800">
-            {{ timeTypeMapping[value] || value }}
-          </span>
-        </template>
-        
+		<div v-else>
+			<ProductHeader :title="headerProps.title" :button-text="headerProps.buttonText"
+				:show-search="headerProps.showSearch" :search-placeholder="headerProps.searchPlaceholder"
+				:show-add-button="true" @search="handleSearch" @add-click="handleAddClick" />
+
+			<!-- 添加模态框 -->
+			<EditModal v-model="showAddModal" title="添加新注册码" :fields="addFormFields" type="primary" @save="handleAdd"
+				@cancel="() => showAddModal = false" />
+
+			<ShowEntity :headers="headers" :dataList="dataList" :headerMapping="headerMapping" :id-field="'code'"
+				 :show-edit="false" @delete="handleDelete" @batch-delete="handleBatchDelete"
+				@selection-change="handleSelectionChange">
+
+				<template #timeType="{ value }">
+					<span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800">
+						{{ timeTypeMapping[value] || value }}
+					</span>
+				</template>
+
 
 				<!-- 自定义使用时间列 -->
 				<template #useTime="{ value }">
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800">
-            {{ value }}
-          </span>
-        </template>
-        
+					<span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800">
+						{{ value }}
+					</span>
+				</template>
+
 				<!-- 自定义到期时间列 -->
-        <template #expireTime="{ value }">
-          <div class="flex items-center space-x-2">
-            <span :class="[
-              'inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium',
-              isExpired(value) ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-            ]">
-              {{ value || '未设置' }}
-            </span>
-            <span v-if="isExpired(value)" class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-red-100 text-red-800">
-              已到期
-            </span>
-          </div>
-        </template>
+				<template #expireTime="{ value }">
+					<div class="flex items-center space-x-2">
+						<span :class="[
+							'inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium',
+							isExpired(value) ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+						]">
+							{{ value || '未设置' }}
+						</span>
+						<span v-if="isExpired(value)"
+							class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-red-100 text-red-800">
+							已到期
+						</span>
+					</div>
+				</template>
 
 				<!-- 自定义激活码列 -->
-        <template #code="{ value }">
-          <div class="flex items-center space-x-2">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-purple-100 text-purple-800">
-              {{ value }}
-            </span>
-            <button 
-              @click="copyToClipboard(value)"
-              class="p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
-              title="复制激活码">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                    d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-              </svg>
-            </button>
-          </div>
-        </template>
+				<template #code="{ value }">
+					<div class="flex items-center space-x-2">
+						<span
+							class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-purple-100 text-purple-800">
+							{{ value }}
+						</span>
+						<button @click="copyToClipboard(value)" class="p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
+							title="复制激活码">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+									d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+							</svg>
+						</button>
+					</div>
+				</template>
 
-      </ShowEntity>
+			</ShowEntity>
 
-      <NavPagination 
-        :total="total"
-        :current="currentPage"
-        :pageSize="pageSize"
-        @page-change="handlePageChange"
-      />
-    </div>
+			<NavPagination :total="total" :current="currentPage" :pageSize="pageSize" @page-change="handlePageChange" />
+		</div>
 
-    <div v-if="error" class="text-red-500 p-4 text-center">
-      {{ error }}
-    </div>
+		<div v-if="error" class="text-red-500 p-4 text-center">
+			{{ error }}
+		</div>
 
-    <!-- 确认删除弹窗 -->
-    <ConfirmModal
-      v-model="showDeleteModal"
-      level="error"
-      title="删除确认"
-      message="你确定要删除该应用吗？此操作不可撤销。"
-      @confirm="confirmDelete"
-      @cancel="cancelDelete"
-    />
+		<!-- 确认删除弹窗 -->
+		<ConfirmModal v-model="showDeleteModal" level="error" title="删除确认" message="你确定要删除该应用吗？此操作不可撤销。"
+			@confirm="confirmDelete" @cancel="cancelDelete" />
 
-    <!-- 编辑模态框 -->
-    <EditModal
-      v-model="showEditModal"
-      title="编辑应用信息"
-      :fields="editFormFields"
-      :initial-data="itemToEdit"
-      type="primary"
-      @save="saveEdit"
-      @cancel="cancelEdit"
-    />
-
-    <!-- 批量编辑模态框 -->
-    <EditModal
-      v-if="showBatchEditModal"
-      v-model="showBatchEditModal"
-      title="批量编辑"
-      :fields="batchEditFields"
-      type="primary"
-      @save="saveBatchEdit"
-      @cancel="cancelBatchEdit"
-    />
-
-    <!-- 批量删除确认框 -->
-    <ConfirmModal
-      v-model="showBatchDeleteModal"
-      title="批量删除确认"
-      :message="`确定要删除选中的 ${selectedItems.length} 项数据吗？`"
-      level="error"
-      @confirm="confirmBatchDelete"
-      @cancel="cancelBatchDelete"
-    />
-  </div>
-  <Message ref="message" />
+		<!-- 批量删除确认框 -->
+		<ConfirmModal v-model="showBatchDeleteModal" title="批量删除确认" :message="`确定要删除选中的 ${selectedItems.length} 项数据吗？`"
+			level="error" @confirm="confirmBatchDelete" @cancel="cancelBatchDelete" />
+	</div>
+	<Message ref="message" />
 </template>
 
 <script setup>
@@ -173,8 +115,9 @@ const showAddModal = ref(false)
 
 // 表头定义
 const headers = [
-  '程序名称',
-  '激活码',
+	'程序名称',
+	'激活码',
+	'绑定用户',
 	'使用时间',
 	'到期时间',
 	'卡类型'
@@ -182,8 +125,9 @@ const headers = [
 
 // 表头映射
 const headerMapping = {
-  '程序名称': 'sname',
-  '激活码': 'code',
+	'程序名称': 'sname',
+	'激活码': 'code',
+	'绑定用户': 'user',
 	'使用时间': 'useTime',
 	'到期时间': 'expireTime',
 	'卡类型': 'timeType'
@@ -191,12 +135,12 @@ const headerMapping = {
 
 // 卡类型映射
 const timeTypeMapping = {
-  "0": '小时卡',
-  "1": '日卡',
-  "2": '周卡',
-  "3": '月卡',
-  "4": '季卡',
-  "5": '年卡'
+	"0": '小时卡',
+	"1": '日卡',
+	"2": '周卡',
+	"3": '月卡',
+	"4": '季卡',
+	"5": '年卡'
 }
 
 // 添加一个新的 ref 存储程序列表
@@ -204,200 +148,164 @@ const programList = ref([])
 
 // 获取程序列表的函数
 const fetchProgramList = async () => {
-  	//123
+	try {
+		// 获取程序列表
+		const response = await api({
+			method: 'get',
+			params: {
+				codetype: 1
+			},
+			url: '/api/soft/list-soft'
+		})
+
+		if (response.data.code === 200) {
+			programList.value = response.data.data.map(item => ({
+				value: item.id,
+				label: item.name
+			}))
+		} else {
+			message.value.show({
+				type: 'error',
+				content: response.data.message || '获取程序列表失败'
+			})
+		}
+	} catch (err) {
+		message.value.show({
+			type: 'error',
+			content: '获取程序列表失败'
+		})
+	}
 }
 
 // 修改添加表单字段定义
 const addFormFields = [
-  {
-    key: 'program',
-    label: '选择程序',
-    type: 'select',
-    get options() {
-      return programList.value
-    },
-    required: true,
-    placeholder: '请选择程序'
-  },
-  {
-    key: 'duration',
-    label: '有效时间',
-    type: 'select',
-    required: true,
-    options: [
-      { value: 'hour', label: '小时卡' },
-      { value: 'day', label: '日卡' },
-      { value: 'week', label: '周卡' },
-      { value: 'month', label: '月卡' },
-      { value: 'season', label: '季卡' },
-      { value: 'year', label: '年卡' }
-    ],
-    placeholder: '请选择有效时间'
-  },
-  {
-    key: 'activateNow',
-    label: '立即激活',
-    type: 'checkbox'
-  },
-  {
-    key: 'quantity',
-    label: '生成数量',
-    type: 'number',
-    required: true,
-    min: 1,
-    placeholder: '请输入生成数量'
-  },
-  {
-    key: 'codeType',
-    label: '激活码类型',
-    type: 'select',
-    required: true,
-    options: [
-      { value: 'normal', label: '普通激活码' },
-      { value: 'special', label: '积分制激活码' }
-    ],
-    placeholder: '请选择激活码类型',
-    onChange: (value, formData) => {
-      // 当选择积分制激活码时，显示积分输入框
-      formData.showScoreField = value === 'special'
-    }
-  },
-  {
-    key: 'score',
-    label: '积分',
-    type: 'number',
-    min: 0,
-    required: true,
-    placeholder: '请输入积分',
-    show: (formData) => formData.codeType === 'special' // 只在选择积分制激活码时显示
-  }
-]
-
-// 编辑表单字段定义
-const editFormFields = [
-  {
-    key: 'sname',
-    label: '程序名称', 
-    type: 'text',
-    placeholder: '请输入程序名称',
-		disabled: true
-  },
-  {
-    key: 'sversion',
-    label: '版本号',
-    type: 'text',
-    required: true,
-    placeholder: '请输入版本号'
-  },
 	{
-    key: 'sdesc',
-    label: '备注',
-    type: 'textarea', 
-    rows: 3,
-    placeholder: '请输入备注信息'
-  },
-	{
-		key: 'snotice',
-		label: '公告',
-		type: 'textarea',
-		rows: 3,
-		placeholder: '请输入公告信息'
+		key: 'program',
+		label: '选择程序',
+		type: 'select',
+		get options() {
+			return programList.value.map(item => ({
+				value: item.value,
+				label: item.label
+			}))
+		},
+		required: true,
+		placeholder: '请选择程序'
 	},
-  {
-    key: 'scodetype',
-    label: '登录形式',
-    type: 'select',
-    required: true,
-    options: [
-      { value: '0', label: '账号+密码' },
-      { value: '1', label: '账号+密码+注册码' },
-      { value: '2', label: '激活码' }
-    ]
-  }
+	{
+		key: 'duration',
+		label: '有效时间',
+		type: 'select',
+		required: true,
+		options: [
+			{ value: 'hour', label: '小时卡' },
+			{ value: 'day', label: '日卡' },
+			{ value: 'week', label: '周卡' },
+			{ value: 'month', label: '月卡' },
+			{ value: 'season', label: '季卡' },
+			{ value: 'year', label: '年卡' }
+		],
+		placeholder: '请选择有效时间'
+	},
+	{
+		key: 'activateNow',
+		label: '立即激活',
+		type: 'checkbox'
+	},
+	{
+		key: 'quantity',
+		label: '生成数量',
+		type: 'number',
+		required: true,
+		min: 1,
+		placeholder: '请输入生成数量'
+	},
+	{
+		key: 'codeType',
+		label: '激活码类型',
+		type: 'select',
+		required: true,
+		options: [
+			{ value: 'normal', label: '普通激活码' },
+			{ value: 'special', label: '积分制激活码' }
+		],
+		placeholder: '请选择激活码类型',
+		onChange: (value, formData) => {
+			// 当选择积分制激活码时，显示积分输入框
+			formData.showScoreField = value === 'special'
+		}
+	},
+	{
+		key: 'score',
+		label: '积分',
+		type: 'number',
+		min: 0,
+		placeholder: '请输入积分',
+		show: (formData) => formData.codeType === 'special' // 只在选择积分制激活码时显示
+	}
 ]
 
-// 批量编辑字段
-const batchEditFields = [
-  {
-    key: 'sversion',
-    label: '版本号',
-    type: 'text',
-    placeholder: '请输入版本号'
-  },
-  {
-    key: 'sdesc',
-    label: '备注',
-    type: 'textarea',
-    placeholder: '请输入备注信息'
-  },
-  {
-    key: 'scodetype',
-    label: '登录形式',
-    type: 'select',
-    options: [
-      { value: '0', label: '账号+密码' },
-      { value: '1', label: '账号+密码+注册码' },
-      { value: '2', label: '激活码' }
-    ],
-    placeholder: '请选择登录形式'
-  }
-]
+
 
 // header 属性
 const headerProps = {
-  title: "注册码管理",
-  buttonText: "添加注册码",
-  showSearch: true,
-  searchPlaceholder: "搜索注册码..."
+	title: "注册码管理",
+	buttonText: "添加注册码",
+	showSearch: true,
+	searchPlaceholder: "搜索注册码..."
 }
 
 // 时间戳转为当前时间
 const formatTime = (timestamp) => {
-  return new Date(timestamp).toLocaleString()
+	if (timestamp == 0 || timestamp == null) {
+		return '未激活'
+	}
+	return new Date(timestamp).toLocaleString()
 }
 
 // 获取数据
 const fetchData = async (keyword = '', currentPage = 1, pageSize = 20) => {
-  loading.value = true
-  
-  try {
-    const response = await api({
-      method: 'post',
-      data: {
-        keyword: keyword,
+	loading.value = true
+
+	try {
+		const response = await api({
+			method: 'post',
+			data: {
+				keyword: keyword,
 				type: 1,
-				page:{
+				page: {
 					currentPage: currentPage,
 					pageSize: pageSize
 				}
-      },
-      url: '/api/code/seach-code'
-    })
+			},
+			url: '/api/code/seach-code'
+		})
 
-    if (response.data.code === 200) {
-      dataList.value = response.data.data.map((item) => ({
-        sname: item.name,
-        code: item.code,
-        useTime: formatTime(item.useTime),
-        expireTime: formatTime(item.expired),
-        timeType: item.timeType
-      }))
-      total.value = response.data.total || 0
-      lastPage.value = Math.ceil(total.value / pageSize)
-    } else {
-      message.value.show({
-        type: 'error',
-        content: response.data.message || '获取数据失败'
-      })
-    }
-  } catch (err) {
-    message.value.show({
-      type: 'error',
-      content: '网络请求失败，请稍后重试'
-    })
-  } finally {
-    loading.value = false
-  }
+		if (response.data.code === 200) {
+			dataList.value = response.data.data.map((item) => ({
+				sname: item.name,
+				code: item.code,
+				user: item.username,
+				useTime: formatTime(item.useTime),
+				expireTime: formatTime(item.expired),
+				timeType: item.timeType
+			}))
+			total.value = response.data.total || 0
+			lastPage.value = Math.ceil(total.value / pageSize)
+		} else {
+			message.value.show({
+				type: 'error',
+				content: response.data.message || '获取数据失败'
+			})
+		}
+	} catch (err) {
+		message.value.show({
+			type: 'error',
+			content: '网络请求失败，请稍后重试'
+		})
+	} finally {
+		loading.value = false
+	}
 }
 
 // 搜索处理
@@ -405,315 +313,212 @@ const handleSearch = async (searchQuery) => {
 	await fetchData(searchQuery, 1, 20)
 }
 
-// 编辑处理
-const handleEdit = (item) => {
-  itemToEdit.value = { ...item }
-  showEditModal.value = true
-}
 
 // 删除处理
 const handleDelete = (item) => {
-  itemToDelete.value = item
-  showDeleteModal.value = true
+	itemToDelete.value = item
+	showDeleteModal.value = true
 }
 
-// 批量编辑处理
-const handleBatchEdit = () => {
-  showBatchEditModal.value = true
-}
 
 // 批量删除处理
 const handleBatchDelete = () => {
-  showBatchDeleteModal.value = true
+	showBatchDeleteModal.value = true
 }
 
 // 选择变化处理
 const handleSelectionChange = (items) => {
-  selectedItems.value = items
+	selectedItems.value = items
 }
 
 // 复制到剪贴板功能
 const copyToClipboard = async (text) => {
-  try {
-    await navigator.clipboard.writeText(text)
-    message.value.show({
-      type: 'success',
-      content: '密钥已复制到剪贴板'
-    })
-  } catch (err) {
-    message.value.show({
-      type: 'error',
-      content: '复制失败，请手动复制'
-    })
-  }
+	try {
+		await navigator.clipboard.writeText(text)
+		message.value.show({
+			type: 'success',
+			content: '密钥已复制到剪贴板'
+		})
+	} catch (err) {
+		message.value.show({
+			type: 'error',
+			content: '复制失败，请手动复制'
+		})
+	}
 }
 
 // 复制失败处理
 const handleCopyError = () => {
-  message.value.show({
-    type: 'error',
-    content: '复制失败，请手动复制'
-  })
+	message.value.show({
+		type: 'error',
+		content: '复制失败，请手动复制'
+	})
 }
 
 // 确认删除
 const confirmDelete = async () => {
-  try {
-    loading.value = true
-		
-    
-    const response = await api({
-      method: 'post',
-      data: {
-        id: [itemToDelete.value.sid]
-      },
-      url: '/api/soft/delete-soft'
-    })
+	try {
+		loading.value = true
 
-    if (response.data.code === 200) {
-      message.value.show({
-        type: 'success',
-        content: '删除成功'
-      })
-      await fetchData()
-    } else {
-      throw new Error(response.data.message)
-    }
-  } catch (err) {
-    message.value.show({
-      type: 'error', 
-      content: err.message || '删除失败'
-    })
-  } finally {
-    showDeleteModal.value = false
-  }
+
+		const response = await api({
+			method: 'post',
+			data: {
+				code: [itemToDelete.value.code]
+			},
+			url: '/api/code/delete-code'
+		})
+
+		if (response.data.code === 200) {
+			message.value.show({
+				type: 'success',
+				content: '删除成功'
+			})
+			await fetchData()
+		} else {
+			throw new Error(response.data.message)
+		}
+	} catch (err) {
+		message.value.show({
+			type: 'error',
+			content: err.message || '删除失败'
+		})
+	} finally {
+		showDeleteModal.value = false
+	}
 }
 
 // 取消删除
 const cancelDelete = () => {
-  showDeleteModal.value = false
-  itemToDelete.value = null
+	showDeleteModal.value = false
+	itemToDelete.value = null
 }
 
-// 保存编辑
-const saveEdit = async (formData) => {
-
-	try{
-		loading.value = true
-		const response = await api({
-			method: 'post',
-			data: {
-				id: itemToEdit.value.sid,
-				desc: formData.sdesc,
-				version: formData.sversion,
-				codetype: formData.scodetype,
-				notice: formData.snotice
-			},
-			url: '/api/soft/update-soft'
-		})
-
-		if(response.data.code === 200){
-			message.value.show({
-				type: 'success',
-				content: '编辑成功'
-			})
-			await fetchData('',currentPage.value, 20)
-		}else{
-			message.value.show({
-				type: 'error',
-				content: response.data.message || '编辑失败'
-			})
-		}
-	}catch(err){
-		message.value.show({
-			type: 'error',
-			content: err.message || '编辑失败'
-		})
-	}finally{
-		loading.value = false
-		showEditModal.value = false
-	}
-}
-
-// 取消编辑
-const cancelEdit = () => {
-  showEditModal.value = false
-}
-
-// 保存批量编辑
-const saveBatchEdit = async (formData) => {
-  const editData = {}
-  selectedItems.value.forEach(sid => {
-    editData[sid] = formData
-  })
-
-	try{
-		loading.value = true
-		const response = await api({
-			method: 'post',
-			data: {
-				id: selectedItems.value,
-				version: formData.sversion,
-				desc: formData.sdesc,
-				codetype: formData.scodetype
-			},
-			url: '/api/soft/update-soft-by-ids'
-		})
-
-		if(response.data.code === 200){
-			message.value.show({
-				type: 'success',
-				content: '批量编辑成功'
-			})
-			await fetchData()
-		}else{
-			message.value.show({
-				type: 'error',
-				content: response.data.message || '批量编辑失败'
-			})
-		}
-	}catch(err){
-		message.value.show({
-			type: 'error',
-			content: err.message || '批量编辑失败'
-		})
-	}finally{
-		loading.value = false
-	}
-
-  
-  showBatchEditModal.value = false
-  selectedItems.value = []
-}
-
-// 取消批量编辑
-const cancelBatchEdit = () => {
-  showBatchEditModal.value = false
-}
 
 // 确认批量删除
 const confirmBatchDelete = async () => {
-  try {
-    loading.value = true		
-    
-    const response = await api({
-      method: 'post',
-      data: {
-        id: selectedItems.value
-      },
-      url: '/api/soft/delete-soft'
-    })
+	try {
+		loading.value = true
 
-    if (response.data.code === 200) {
-      message.value.show({
-        type: 'success',
-        content: '批量删除成功'
-      })
-      await fetchData('',currentPage.value, 20)
-    } else {
-      throw new Error(response.data.message)
-    }
-  } catch (err) {
-    message.value.show({
-      type: 'error', 
-      content: err.message || '批量删除失败'
-    })
-  } finally {
-    loading.value = false
-  }
+		const response = await api({
+			method: 'post',
+			data: {
+				code: selectedItems.value
+			},
+			url: '/api/code/delete-code'
+		})
 
-  selectedItems.value = []
-  showBatchDeleteModal.value = false
+		if (response.data.code === 200) {
+			message.value.show({
+				type: 'success',
+				content: '批量删除成功'
+			})
+			await fetchData('', currentPage.value, 20)
+		} else {
+			throw new Error(response.data.message)
+		}
+	} catch (err) {
+		message.value.show({
+			type: 'error',
+			content: err.message || '批量删除失败'
+		})
+	} finally {
+		loading.value = false
+	}
+
+	selectedItems.value = []
+	showBatchDeleteModal.value = false
 }
 
 // 取消批量删除
 const cancelBatchDelete = () => {
-  showBatchDeleteModal.value = false
+	showBatchDeleteModal.value = false
 }
 
 // 处理添加按钮点击
 const handleAddClick = async () => {
-  await fetchProgramList()
-  showAddModal.value = true
+	await fetchProgramList()
+	showAddModal.value = true
 }
 
 // 处理添加操作
 const handleAdd = async (formData) => {
-  try {
-    loading.value = true    
-    const response = await api({
-      method: 'post',
-      data: {
+	try {
+		loading.value = true
+		const response = await api({
+			method: 'post',
+			data: {
 				name: formData.sname,
 				desc: formData.sdesc,
 				version: formData.sversion,
 				codetype: formData.scodetype
 			},
-      url: '/api/soft/add-soft'
-    })
+			url: '/api/soft/add-soft'
+		})
 
-    if (response.data.code === 200) {
-      message.value.show({
-        type: 'success',
-        content: '添加成功'
-      })
-      await fetchData()
-    } else {
-      throw new Error(response.data.message)
-    }
-  } catch (err) {
-    message.value.show({
-      type: 'error',
-      content: err.message || '添加失败'
-    })
-  } finally {
-    loading.value = false
-    showAddModal.value = false
-  }
+		if (response.data.code === 200) {
+			message.value.show({
+				type: 'success',
+				content: '添加成功'
+			})
+			await fetchData()
+		} else {
+			throw new Error(response.data.message)
+		}
+	} catch (err) {
+		message.value.show({
+			type: 'error',
+			content: err.message || '添加失败'
+		})
+	} finally {
+		loading.value = false
+		showAddModal.value = false
+	}
 }
 
 // 分页切换
 const handlePageChange = async (newPage) => {
-	await fetchData(searchQuery.value,newPage, 20)
+	await fetchData(searchQuery.value, newPage, 20)
 
 }
 
 // 初始加载数据
 onMounted(() => {
-  fetchData()
-  fetchProgramList()
+	fetchData()
+	fetchProgramList()
 })
 
 // 导出必要的属性和方法
 defineExpose({
-  fetchData
+	fetchData
 })
 
 // 判断是否已过期
 const isExpired = (dateString) => {
-  if (!dateString) return false;
-  const expireDate = new Date(dateString);
-  const now = new Date();
-  return expireDate < now;
+	if (!dateString) return false;
+	const expireDate = new Date(dateString);
+	const now = new Date();
+	return expireDate < now;
 }
 </script>
 
 <style scoped>
 .entities-crud {
-  min-height: 200px;
-  position: relative;
+	min-height: 200px;
+	position: relative;
 }
 
 .animate-spin {
-  animation: spin 1s linear infinite;
+	animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+	from {
+		transform: rotate(0deg);
+	}
+
+	to {
+		transform: rotate(360deg);
+	}
 }
 </style>

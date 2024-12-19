@@ -20,7 +20,8 @@
 								<th scope="col" class="p-4 text-xs font-medium text-right text-gray-500 uppercase w-[200px]">
 									<div v-if="showBatchButtons" class="flex justify-end space-x-2">
 										<slot name="batch-actions">
-											<button @click="$emit('batch-edit')" 
+											<button v-if="showEdit" 
+													@click="$emit('batch-edit')" 
 													class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300">
 												<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
 													<path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
@@ -59,7 +60,8 @@
 								<td class="p-4 whitespace-nowrap text-right">
 									<slot name="row-actions" :item="item">
 										<div class="flex justify-end space-x-2">
-											<button @click="$emit('edit', item)" 
+											<button v-if="showEdit" 
+													@click="$emit('edit', item)" 
 													class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300">
 												<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
 													<path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
@@ -104,6 +106,10 @@ const props = defineProps({
 	idField: {
 		type: String,
 		default: 'id'
+	},
+	showEdit: {
+		type: Boolean,
+		default: true
 	}
 })
 

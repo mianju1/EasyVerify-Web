@@ -255,7 +255,7 @@ const editFormFields = [
     key: 'scodetype',
     label: '登录形式',
     type: 'select',
-    required: true,
+		disabled: true,
     options: [
       { value: '0', label: '账号+密码' },
       { value: '1', label: '账号+密码+注册码' },
@@ -277,17 +277,6 @@ const batchEditFields = [
     label: '备注',
     type: 'textarea',
     placeholder: '请输入备注信息'
-  },
-  {
-    key: 'scodetype',
-    label: '登录形式',
-    type: 'select',
-    options: [
-      { value: '0', label: '账号+密码' },
-      { value: '1', label: '账号+密码+注册码' },
-      { value: '2', label: '激活码' }
-    ],
-    placeholder: '请选择登录形式'
   }
 ]
 
