@@ -152,7 +152,7 @@ const total = ref(0)
 const lastPage = ref(1)
 const selectedItems = ref([])
 const pageSize = ref(20)
-// 模态框状���
+// 模态框状态
 const showDeleteModal = ref(false)
 const showEditModal = ref(false)
 const showBatchEditModal = ref(false)
@@ -409,12 +409,15 @@ const confirmDelete = async () => {
       })
       await fetchData(searchQuery.value, currentPage.value, pageSize.value)
     } else {
-      throw new Error(response.data.message)
+      message.value.show({
+        type: 'error',
+        content: response.data.message || '删除失败'
+      })
     }
   } catch (err) {
     message.value.show({
       type: 'error', 
-      content: err.message || '删除失败'
+      content: err.response.data.message || '删除失败'
     })
   } finally {
     showDeleteModal.value = false
@@ -459,7 +462,7 @@ const saveEdit = async (formData) => {
 	}catch(err){
 		message.value.show({
 			type: 'error',
-			content: err.message || '编辑失败'
+			content: err.response.data.message || '编辑失败'
 		})
 	}finally{
 		loading.value = false
@@ -507,7 +510,7 @@ const saveBatchEdit = async (formData) => {
 	}catch(err){
 		message.value.show({
 			type: 'error',
-			content: err.message || '批量编辑失败'
+			content: err.response.data.message || '批量编辑失败'
 		})
 	}finally{
 		loading.value = false
@@ -543,12 +546,15 @@ const confirmBatchDelete = async () => {
       })
       await fetchData(searchQuery.value, currentPage.value, pageSize.value)
     } else {
-      throw new Error(response.data.message)
+      message.value.show({
+        type: 'error',
+        content: response.data.message || '批量删除失败'
+      })
     }
   } catch (err) {
     message.value.show({
       type: 'error', 
-      content: err.message || '批量删除失败'
+      content: err.response.data.message || '批量删除失败'
     })
   } finally {
     loading.value = false
@@ -590,12 +596,15 @@ const handleAdd = async (formData) => {
       })
       await fetchData(searchQuery.value, currentPage.value, pageSize.value)
     } else {
-      throw new Error(response.data.message)
+      message.value.show({
+        type: 'error',
+        content: response.data.message || '添加失败'
+      })
     }
   } catch (err) {
     message.value.show({
       type: 'error',
-      content: err.message || '添加失败'
+      content: err.response.data.message || '添加失败'
     })
   } finally {
     loading.value = false

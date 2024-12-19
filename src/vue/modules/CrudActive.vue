@@ -13,8 +13,30 @@
 			<EditModal v-model="showAddModal" title="添加新注册码" :fields="addFormFields" type="primary" @save="handleAdd"
 				@cancel="() => showAddModal = false" />
 
+			<!-- 编辑模态框 -->
+			<EditModal
+				v-model="showEditModal"
+				title="编辑激活码"
+				:fields="editFormFields"
+				:initial-data="itemToEdit"
+				type="primary"
+				@save="saveEdit"
+				@cancel="cancelEdit"
+			/>
+
+			<!-- 添加批量编辑模态框 -->
+			<EditModal
+				v-if="showBatchEditModal"
+				v-model="showBatchEditModal"
+				title="批量编辑激活码"
+				:fields="editFormFields"
+				type="primary"
+				@save="saveBatchEdit"
+				@cancel="cancelBatchEdit"
+			/>
+
 			<ShowEntity :headers="headers" :dataList="dataList" :headerMapping="headerMapping" :id-field="'code'"
-				 :show-edit="false" @delete="handleDelete" @batch-delete="handleBatchDelete"
+				 :show-edit="true" :show-batch-edit="true" @edit="handleEdit" @batch-edit="handleBatchEdit" @delete="handleDelete" @batch-delete="handleBatchDelete"
 				@selection-change="handleSelectionChange">
 
 				<template #timeType="{ value }">
@@ -72,7 +94,7 @@
 		<div v-if="error" class="text-red-500 p-4 text-center">
 			{{ error }}
 		</div>
-		
+
 		<!-- 确认删除弹窗 -->
 		<ConfirmModal v-model="showDeleteModal" level="error" title="删除确认" message="你确定要删除该应用吗？此操作不可撤销。"
 			@confirm="confirmDelete" @cancel="cancelDelete" />
@@ -118,7 +140,7 @@ const showAddModal = ref(false)
 const headers = [
 	'程序名称',
 	'激活码',
-	'绑定用户',
+	'机器码',
 	'使用时间',
 	'到期时间',
 	'卡类型'
@@ -128,7 +150,7 @@ const headers = [
 const headerMapping = {
 	'程序名称': 'sname',
 	'激活码': 'code',
-	'绑定用户': 'user',
+	'机器码': 'user',
 	'使用时间': 'useTime',
 	'到期时间': 'expireTime',
 	'卡类型': 'timeType'
@@ -144,6 +166,16 @@ const timeTypeMapping = {
 	"5": '年卡'
 }
 
+// 编辑表单字段定义
+const editFormFields = [
+  {
+    key: 'user',
+    label: '机器码', 
+    type: 'text',
+    placeholder: '请输入机器码'
+  }
+]
+
 // 添加一个新的 ref 存储程序列表
 const programList = ref([])
 
@@ -154,7 +186,7 @@ const fetchProgramList = async () => {
 		const response = await api({
 			method: 'get',
 			params: {
-				codetype: 1
+				codetype: 2
 			},
 			url: '/api/soft/list-soft'
 		})
@@ -227,7 +259,7 @@ const addFormFields = [
 		type: 'select',
 		required: true,
 		options: [
-			{ value: 'normal', label: '普通注册码' }
+			{ value: 'normal', label: '普通激活码' }
 			// ,{ value: 'special', label: '积分制激活码' }
 		],
 		placeholder: '请选择激活码类型',
@@ -250,10 +282,10 @@ const addFormFields = [
 
 // header 属性
 const headerProps = {
-	title: "注册码管理",
-	buttonText: "添加注册码",
+	title: "激活码管理",
+	buttonText: "添加激活码",
 	showSearch: true,
-	searchPlaceholder: "搜索注册码..."
+	searchPlaceholder: "搜索激活码..."
 }
 
 // 时间戳转为当前时间
@@ -273,7 +305,7 @@ const fetchData = async (keyword = '', page = 1, pageSize = 20) => {
 			method: 'post',
 			data: {
 				keyword: keyword,
-				type: 1,
+				type: 2,
 				page: {
 					currentPage: page,
 					pageSize: pageSize
@@ -476,7 +508,7 @@ const handleAdd = async (formData) => {
 				'year': '5'
 			}[formData.duration],
 			num: formData.quantity,
-			codeType: 1,  // 注册码固定为1 激活码为2
+			codeType: 2,  // 注册码固定为1 激活码为2
 			scores: formData.score || -1,
 			isActive: formData.activateNow || false
 		}
@@ -533,6 +565,102 @@ const isExpired = (dateString) => {
 	const expireDate = new Date(dateString);
 	const now = new Date();
 	return expireDate < now;
+}
+
+// 编辑处理
+const handleEdit = (item) => {
+  itemToEdit.value = { ...item }
+  showEditModal.value = true
+}
+
+// 保存编辑
+const saveEdit = async (formData) => {
+  try {
+    loading.value = true
+    const response = await api({
+      method: 'post',
+      data: {
+        code: [itemToEdit.value.code],
+        machine: formData.user
+      },
+      url: '/api/code/update-machine'
+    })
+
+    if (response.data.code === 200) {
+      message.value.show({
+        type: 'success',
+        content: '编辑成功'
+      })
+      await fetchData(searchQuery.value, currentPage.value, pageSize.value)
+    } else {
+      message.value.show({
+        type: 'error',
+        content: response.data.message || '编辑失败'
+      })
+    }
+  } catch (err) {
+    message.value.show({
+      type: 'error',
+      content: err.response.data.message || '编辑失败'
+    })
+  } finally {
+    loading.value = false
+    showEditModal.value = false
+  }
+}
+
+// 取消编辑
+const cancelEdit = () => {
+  showEditModal.value = false
+  itemToEdit.value = null
+}
+
+// 添加批量编辑相关的方法
+const handleBatchEdit = () => {
+  showBatchEditModal.value = true
+}
+
+// 保存批量编辑
+const saveBatchEdit = async (formData) => {
+  try {
+    loading.value = true
+    const response = await api({
+      method: 'post',
+      data: {
+        code: selectedItems.value,
+        machine: formData.user
+      },
+      url: '/api/code/update-machine'  // 假设这是批量更新的接口
+    })
+
+    if (response.data.code === 200) {
+      message.value.show({
+        type: 'success',
+        content: '批量编辑成功'
+      })
+      await fetchData(searchQuery.value, currentPage.value, pageSize.value)
+    } else {
+      message.value.show({
+        type: 'error',
+        content: response.data.message || '批量编辑失败'
+      })
+    }
+  } catch (err) {
+    message.value.show({
+      type: 'error',
+      content: err.response.data.message || '批量编辑失败'
+    })
+  } finally {
+    loading.value = false
+    showBatchEditModal.value = false
+    selectedItems.value = []
+  }
+}
+
+// 取消批量编辑
+const cancelBatchEdit = () => {
+  showBatchEditModal.value = false
+  selectedItems.value = []
 }
 </script>
 
