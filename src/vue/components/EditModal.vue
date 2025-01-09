@@ -129,6 +129,7 @@
                              :required="field.required"
                              :min="field.min"
                              :max="field.max"
+                             @input="handleDateTimeChange($event, field.key)"
                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm 
                                     focus:border-blue-500 focus:ring-blue-500
                                     disabled:bg-gray-100 disabled:text-gray-500" />
@@ -227,18 +228,24 @@ watch(() => props.initialData, (newVal) => {
   
   // 处理默认值
   props.fields.forEach(field => {
-    // 修复：先判断字段是否存在
-    if (field.type === 'select') {
+    if (field.type === 'datetime' && data[field.key]) {
+      // 如果是日期时间类型，确保格式正确
+      try {
+        const date = new Date(data[field.key])
+        if (!isNaN(date.getTime())) {
+          data[field.key] = formatDateTime(date)
+        }
+      } catch (error) {
+        console.error('日期格式化错误:', error)
+      }
+    } else if (field.type === 'select') {
       if (data[field.key] === undefined || data[field.key] === '') {
-        // 查找默认选项
         const defaultOption = field.options?.find(opt => opt.default === true)
         if (defaultOption) {
           data[field.key] = defaultOption.value
         } else if (field.options?.length > 0) {
-          // 如果没有设置默认值，则使用第一个选项
           data[field.key] = field.options[0].value
         } else {
-          // 如果没有选项，设置为空字符串
           data[field.key] = ''
         }
       }
@@ -285,6 +292,29 @@ const handleSelectChange = (field, value) => {
   if (field.onChange) {
     field.onChange(value, formData.value)
   }
+}
+
+// 添加日期时间处理函数
+const handleDateTimeChange = (event, key) => {
+  const dateValue = event.target.value
+  if (dateValue) {
+    // 将datetime-local的值转换为指定格式
+    const date = new Date(dateValue)
+    const formattedDate = formatDateTime(date)
+    formData.value[key] = formattedDate
+  }
+}
+
+// 添加日期格式化函数
+const formatDateTime = (date) => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  const seconds = String(date.getSeconds()).padStart(2, '0')
+  
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 </script>
 

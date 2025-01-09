@@ -7,19 +7,23 @@
     <div v-else>
       <ProductHeader
         :title="headerProps.title"
+        :show-search="headerProps.showSearch"
+        :search-placeholder="headerProps.searchPlaceholder"
         :show-software-select="headerProps.showSoftwareSelect"
         :software-list="softwareList"
         :selected-software="selectedSoftware"
         :show-add-button="false"
+				v-model:searchValue="searchKeyword"
         @update:selected-software="selectedSoftware = $event"
         @software-change="handleSoftwareChange"
+        @search="handleSearch"
       />
       
       <ShowEntity 
         :headers="headers"
         :dataList="dataList"
         :headerMapping="headerMapping"
-        :id-field="'url'"
+        :id-field="'username'"
         :selectable="true"
         @edit="handleEdit"
         @delete="handleDelete"
@@ -27,49 +31,45 @@
         @batch-delete="handleBatchDelete"
         @selection-change="handleSelectionChange"
       >
-        <!-- 自定义程序名称列 -->
-        <template #name="{ value }">
-          <span class="font-medium text-gray-900">{{ value }}</span>
-        </template>
-
-        <!-- 自定义接口描述列 -->
-        <template #description="{ value }">
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800">
+        <!-- 自定义用户名列 -->
+        <template #username="{ value }">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-purple-100 text-purple-800">
             {{ value }}
           </span>
         </template>
 
-        <!-- 自定义链接列 -->
-        <template #url="{ value }">
+        <!-- 自定义机器码列 -->
+        <template #machineCode="{ value }">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800">
+            {{ value || '未绑定'}}
+          </span>
+        </template>
+
+        <!-- 自定义到期时间列 -->
+        <template #expireTime="{ value }">
           <div class="flex items-center space-x-2">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-purple-100 text-purple-800">
-              {{ BASE_URL + value }}
+            <span :class="[
+              'inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium',
+              isExpired(value) ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+            ]">
+              {{ formatTime(value) }}
             </span>
-            <button 
-              @click="copyToClipboard(value)"
-              class="p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
-              title="复制链接">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                    d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-              </svg>
-            </button>
+            <span v-if="isExpired(value)"
+              class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-red-100 text-red-800">
+              已到期
+            </span>
           </div>
         </template>
-        <!-- 自定义功能列显示 -->
-        <template #function="{ value }">
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800">
-            {{ value }}
-          </span>
-        </template>
 
-        <!-- 自定义加密方式列显示 -->
-        <template #encryption="{ value }">
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium" 
-                :class="value === '0' ? 'bg-gray-100 text-gray-800' : 'bg-green-100 text-green-800'">
-            {{ value }}
-          </span>
-        </template>
+        <!-- 自定义用户状态列 -->
+        <template #status="{ value }">
+  <span :class="[
+    'inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium',
+    value === '-1' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+  ]">
+    {{ userStatusMapping[value] }}
+  </span>
+</template>
       </ShowEntity>
 
       <NavPagination 
@@ -160,10 +160,25 @@ const selectedSoftware = ref(null)
 // 然后再定义 headerProps
 const headerProps = {
   title: "用户列表",
-  showSearch: false,
+  showSearch: true,
   showAddButton: false,
   showSoftwareSelect: true,
-  softwareList: softwareList
+  softwareList: softwareList,
+  searchPlaceholder: '搜索用户名/机器码/激活码'
+}
+
+// 添加搜索关键词变量
+const searchKeyword = ref('')
+
+// 添加搜索处理方法
+const handleSearch = async (keyword) => {
+  if (keyword === undefined || keyword === null) {
+    searchKeyword.value = ''
+  } else {
+    searchKeyword.value = keyword.trim()
+  }
+  currentPage.value = 1 // 重置页码
+  await fetchData(1, pageSize.value)
 }
 
 // 模态框状态
@@ -177,8 +192,8 @@ const itemToDelete = ref(null)
 // 表头定义
 const headers = [
   '程序名称',
-  '用户名',
-  '机器码',
+  '激活码',
+  '用户名/机器码',
   '到期时间',
   '用户状态'
 ]
@@ -186,19 +201,19 @@ const headers = [
 // 表头映射
 const headerMapping = {
   '程序名称': 'name',
-  '用户名': 'username',
-  '机器码': 'machineCode',
+  '激活码': 'username',
+  '用户名/机器码': 'machineCode',
   '到期时间': 'expireTime',
   '用户状态': 'status'
 }
 
 // 添加用户状态映射
 const userStatusMapping = {
-  '0': '允许',
-  '1': '禁止'
+  '-1': '正常',
+  '0': '禁用'
 }
 
-// 编辑表单字段定义
+// 修改编辑表单字段定义
 const editFormFields = [
   {
     key: 'name',
@@ -213,22 +228,16 @@ const editFormFields = [
     type: 'select',
     required: true,
     options: [
-      { value: '0', label: '允许' },
-      { value: '1', label: '禁止' }
+      { value: '-1', label: '正常' },
+      { value: '0', label: '禁用' }
     ]
   },
   {
     key: 'expireTime',
     label: '到期时间',
     type: 'datetime',
-    required: false
-  },
-  {
-    key: 'username',
-    label: '绑定用户名',
-    type: 'text',
     required: false,
-    placeholder: '请输入用户名'
+    format: 'YYYY-MM-DD HH:mm:ss'
   },
   {
     key: 'machineCode',
@@ -252,10 +261,11 @@ const batchEditFields = [
     }))
   },
   {
-    key: 'expireTime',
-    label: '到期时间',
-    type: 'datetime',
-    required: true
+    key: 'machineCode',
+    label: '机器码',
+    type: 'text',
+    required: false,
+    placeholder: '请输入机器码'
   }
 ]
 
@@ -294,6 +304,35 @@ const fetchSoftwareList = async () => {
   }
 }
 
+// 添加时间格式化函数
+const formatTime = (timestamp) => {
+  if (!timestamp || timestamp === '0' || timestamp === 0) {
+    return '未设置'
+  }
+  return new Date(timestamp).toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }).replace(/\//g, '-')
+}
+
+// 添加判断是否过期的函数
+const isExpired = (dateString) => {
+  if (!dateString || dateString === '未设置') {
+    return false
+  }
+  
+  const expireDate = new Date(dateString)
+  if (isNaN(expireDate.getTime())) return false
+  
+  const now = new Date()
+  return expireDate < now
+}
+
 // 获取数据
 const fetchData = async (page = 1, pageSize = 20) => {
   if (!selectedSoftware.value) return
@@ -303,21 +342,22 @@ const fetchData = async (page = 1, pageSize = 20) => {
       method: 'post',
       data: {
         sid: selectedSoftware.value,
+        keyword: searchKeyword.value,
         page: {
           currentPage: page,
           pageSize: pageSize
         }
       },
-      url: '/api/web/get-interface'
+      url: '/api/user/get-user'
     })
 
     if (response.data.code === 200) {
       dataList.value = response.data.data.map((item) => ({
-        name: item.name,
-        username: item.username,
+        name: item.sname,
+        username: item.code,
         machineCode: item.machineCode,
-        expireTime: item.expireTime,
-        status: item.status
+        expireTime: formatTime(item.expiredTime),
+        status: item.score.toString()
       }))
       total.value = response.data.total || 0
       lastPage.value = Math.ceil(total.value / pageSize)
@@ -381,9 +421,9 @@ const confirmDelete = async () => {
       method: 'post',
       data: {
 				sid: selectedSoftware.value,
-        url: [itemToDelete.value.url]
+        code: [itemToDelete.value.username]
       },
-      url: '/api/web/delete-interface'
+      url: '/api/user/del-user'
     })
 
     if (response.data.code === 200) {
@@ -414,40 +454,71 @@ const cancelDelete = () => {
   itemToDelete.value = null
 }
 
+// 添加时间转换工具函数
+const convertDateStringToTimestamp = (dateString) => {
+  if (!dateString || dateString === '未设置') {
+    return null
+  }
+  
+  try {
+    const [datePart, timePart] = dateString.split(' ')
+    const [year, month, day] = datePart.split('-')
+    const [hour, minute, second] = timePart.split(':')
+    
+    const date = new Date(
+      parseInt(year),
+      parseInt(month) - 1, // 月份需要减1
+      parseInt(day),
+      parseInt(hour),
+      parseInt(minute),
+      parseInt(second)
+    )
+    
+    return date.getTime()
+  } catch (error) {
+    console.error('日期转换错误:', error)
+    return null
+  }
+}
+
 // 保存编辑
 const saveEdit = async (formData) => {
-  try{
+  try {
     loading.value = true
+  
+    // 确保时间格式正确
+    const expiredTime = formData.expireTime ? convertDateStringToTimestamp(formData.expireTime) : null
+    
     const response = await api({
       method: 'post',
       data: {
         sid: selectedSoftware.value,
         status: formData.status,
-        expireTime: formData.expireTime,
-        username: formData.username,
+        expiredTime: expiredTime,
+        code: [formData.username],
         machineCode: formData.machineCode
       },
-      url: '/api/web/update-user'
+      url: '/api/user/update-user'
     })
-	
-    if(response.data.code === 200){
+
+    if (response.data.code === 200) {
       message.value.show({
         type: 'success',
         content: '编辑成功'
       })
       await fetchData(currentPage.value, pageSize.value)
-    }else{
+    } else {
       message.value.show({
         type: 'error',
         content: response.data.message || '编辑失败'
       })
     }
-  }catch(err){
+  } catch (err) {
     message.value.show({
       type: 'error',
       content: err.response.data.message || '编辑失败'
     })
-  }finally{
+  } finally {
     loading.value = false
     showEditModal.value = false
   }
@@ -460,47 +531,54 @@ const cancelEdit = () => {
 
 // 保存批量编辑
 const saveBatchEdit = async (formData) => {
-  const editData = {}
-  selectedItems.value.forEach(sid => {
-    editData[sid] = formData
-  })
+  try {
+    if (selectedItems.value.length === 0) {
+      message.value.show({
+        type: 'warning',
+        content: '请先选择要编辑的记录'
+      })
+      return
+    }
+    loading.value = true
 
-	try{
-		loading.value = true
-		const response = await api({
-			method: 'post',
-			data: {
-				sid: selectedSoftware.value,
-				url: selectedItems.value,
-				encryption: formData.encryption
-			},
-			url: '/api/web/update-interface'
-		})
+    const selectedCodes = selectedItems.value.map(item => item.username)
 
-		if(response.data.code === 200){
-			message.value.show({
-				type: 'success',
-				content: '批量编辑成功'
-			})
-			await fetchData(currentPage.value, pageSize.value)
-		}else{
-			message.value.show({
-				type: 'error',
-				content: response.data.message || '批量编辑失败'
-			})
-		}
-	}catch(err){
-		message.value.show({
-			type: 'error',
-			content: err.response.data.message || '批量编辑失败'
-		})
-	}finally{
-		loading.value = false
-	}
+    const response = await api({
+      method: 'post',
+      data: {
+        sid: selectedSoftware.value,
+        status: formData.status,
+        ...(formData.expireTime && {
+          expiredTime: convertDateStringToTimestamp(formData.expireTime)
+        }),
+        code: selectedItems.value,
+        machineCode: formData.machineCode
+      },
+      url: '/api/user/update-user'
+    })
 
-  
-  showBatchEditModal.value = false
-  selectedItems.value = []
+    if (response.data.code === 200) {
+      message.value.show({
+        type: 'success',
+        content: '批量编辑成功'
+      })
+      await fetchData(currentPage.value, pageSize.value)
+    } else {
+      message.value.show({
+        type: 'error',
+        content: response.data.message || '批量编辑失败'
+      })
+    }
+  } catch (err) {
+    message.value.show({
+      type: 'error',
+      content: err.response.data.message || '批量编辑失败'
+    })
+  } finally {
+    loading.value = false
+    showBatchEditModal.value = false
+    selectedItems.value = []
+  }
 }
 
 // 取消批量编辑
@@ -516,10 +594,10 @@ const confirmBatchDelete = async () => {
     const response = await api({
       method: 'post',
       data: {
-				sid: selectedSoftware.value,
-        url: selectedItems.value
+        sid: selectedSoftware.value,
+        code: selectedItems.value
       },
-      url: '/api/web/delete-interface'
+      url: '/api/user/del-user'
     })
 
     if (response.data.code === 200) {
