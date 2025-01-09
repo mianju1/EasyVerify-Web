@@ -115,6 +115,25 @@
                       </label>
                     </div>
                   </template>
+
+                  <!-- 日期时间选择器 -->
+                  <template v-if="field.type === 'datetime'">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700">
+                        {{ field.label }}
+                        <span v-if="field.required" class="text-red-500">*</span>
+                      </label>
+                      <input type="datetime-local"
+                             v-model="formData[field.key]"
+                             :disabled="field.disabled"
+                             :required="field.required"
+                             :min="field.min"
+                             :max="field.max"
+                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                                    focus:border-blue-500 focus:ring-blue-500
+                                    disabled:bg-gray-100 disabled:text-gray-500" />
+                    </div>
+                  </template>
                 </div>
               </div>
             </form>
@@ -163,15 +182,14 @@ const props = defineProps({
     // [{
     //   key: 'name',           // 字段键名
     //   label: '名称',         // 显示标签
-    //   type: 'text',          // 输入类型: text/textarea/number/select
+    //   type: 'text',          // 输入类型: text/textarea/number/select/datetime
     //   disabled: false,       // 是否禁用
     //   placeholder: '请输入', // 占位文本
     //   required: true,        // 是否必填
     //   options: [],          // select类型的选项
     //   rows: 3,              // textarea的行数
-    //   min: 0,               // number类型的最小值
-    //   max: 100,             // number类型的最大值
-    //   step: 1               // number类型的步进值
+    //   min: '2024-01-01T00:00', // datetime类型的最小值
+    //   max: '2025-12-31T23:59', // datetime类型的最大值
     // }]
   },
   initialData: {

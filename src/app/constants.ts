@@ -9,6 +9,7 @@ export const RANDOMIZE = Boolean(import.meta.env.RANDOMIZE) || true;
 
 export const GITHUB_REPO_URL = 'https://github.com/themesberg/flowbite-astro-admin-dashboard';
 export const REPO_NAME = '伊泽网络验证';
+export const BASE_URL = 'http://localhost:8080/';
 
 
 // NOTE: Unmapped

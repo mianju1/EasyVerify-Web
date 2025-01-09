@@ -10,11 +10,9 @@
         :show-software-select="headerProps.showSoftwareSelect"
         :software-list="softwareList"
         :selected-software="selectedSoftware"
-        :show-add-button="headerProps.showAddButton"
-        :button-text="headerProps.buttonText"
+        :show-add-button="false"
         @update:selected-software="selectedSoftware = $event"
         @software-change="handleSoftwareChange"
-        @add-click="handleAddClick"
       />
       
       <ShowEntity 
@@ -61,7 +59,7 @@
         <!-- 自定义功能列显示 -->
         <template #function="{ value }">
           <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800">
-            {{ functionTypeMapping[value] || value }}
+            {{ value }}
           </span>
         </template>
 
@@ -69,7 +67,7 @@
         <template #encryption="{ value }">
           <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium" 
                 :class="value === '0' ? 'bg-gray-100 text-gray-800' : 'bg-green-100 text-green-800'">
-            {{ encryptionTypeMapping[value] || value }}
+            {{ value }}
           </span>
         </template>
       </ShowEntity>
@@ -127,17 +125,6 @@
       @confirm="confirmBatchDelete"
       @cancel="cancelBatchDelete"
     />
-
-    <!-- 新增模态框 -->
-    <EditModal
-      v-if="showAddModal"
-      v-model="showAddModal"
-      title="新增API接口"
-      :fields="addFormFields"
-      type="primary"
-      @save="handleAddSave"
-      @cancel="showAddModal = false"
-    />
   </div>
   <Message ref="message" />
 </template>
@@ -172,10 +159,9 @@ const selectedSoftware = ref(null)
 
 // 然后再定义 headerProps
 const headerProps = {
-  title: "API接口",
+  title: "用户列表",
   showSearch: false,
-  showAddButton: true,
-  buttonText: '新增API接口',
+  showAddButton: false,
   showSoftwareSelect: true,
   softwareList: softwareList
 }
@@ -187,49 +173,29 @@ const showBatchEditModal = ref(false)
 const showBatchDeleteModal = ref(false)
 const itemToEdit = ref(null)
 const itemToDelete = ref(null)
-const showAddModal = ref(false)
 
 // 表头定义
 const headers = [
   '程序名称',
-  '请求功能', 
-  '接口地址',
-  '接口描述',
-  '加密方式'
+  '用户名',
+  '机器码',
+  '到期时间',
+  '用户状态'
 ]
 
 // 表头映射
 const headerMapping = {
   '程序名称': 'name',
-  '请求功能': 'function',
-  '接口地址': 'url',
-  '接口描述': 'description',
-  '加密方式': 'encryption'
+  '用户名': 'username',
+  '机器码': 'machineCode',
+  '到期时间': 'expireTime',
+  '用户状态': 'status'
 }
 
-// 登录形式映射
-const codeTypeMapping = {
-  '0': '账号+密码',
-  '1': '账号+密码+注册码',
-  '2': '激活码'
-}
-
-// 添加接口功能映射
-const functionTypeMapping = {
-  '0': '注册',
-  '1': '账号登录',
-  '2': '激活码登录',
-  '3': '获取版本',
-  '4': '获取公告',
-  '5': '获取指定用户到期时间',
-  '6': '获取最新版本号',
-  '7': '修改用户密码'
-}
-
-// 添加加密方式映射
-const encryptionTypeMapping = {
-  '0': '无加密',
-  '1': 'RSA2048'
+// 添加用户状态映射
+const userStatusMapping = {
+  '0': '允许',
+  '1': '禁止'
 }
 
 // 编辑表单字段定义
@@ -238,56 +204,58 @@ const editFormFields = [
     key: 'name',
     label: '程序名称', 
     type: 'text',
-    placeholder: '请输入程序名称',
-		disabled: true
+    placeholder: '程序名称',
+    disabled: true
   },
   {
-    key: 'encryption',
-    label: '加密方式',
+    key: 'status',
+    label: '用户状态',
     type: 'select',
-		required: true,
+    required: true,
     options: [
-      { value: '0', label: '无加密' },
-      { value: '1', label: 'RSA2048' }
+      { value: '0', label: '允许' },
+      { value: '1', label: '禁止' }
     ]
+  },
+  {
+    key: 'expireTime',
+    label: '到期时间',
+    type: 'datetime',
+    required: false
+  },
+  {
+    key: 'username',
+    label: '绑定用户名',
+    type: 'text',
+    required: false,
+    placeholder: '请输入用户名'
+  },
+  {
+    key: 'machineCode',
+    label: '机器码',
+    type: 'text',
+    required: false,
+    placeholder: '请输入机器码'
   }
 ]
 
 // 批量编辑字段
 const batchEditFields = [
   {
-    key: 'encryption',
-    label: '加密方式',
+    key: 'status',
+    label: '用户状态',
     type: 'select',
     required: true,
-    options: Object.entries(encryptionTypeMapping).map(([value, label]) => ({
-      value,
-      label
-    }))
-  }
-]
-
-// 新增表单字段定义
-const addFormFields = [
-  {
-    key: 'function',
-    label: '接口功能',
-    type: 'select',
-    required: true,
-    options: Object.entries(functionTypeMapping).map(([value, label]) => ({
+    options: Object.entries(userStatusMapping).map(([value, label]) => ({
       value,
       label
     }))
   },
   {
-    key: 'encryption',
-    label: '加密方式',
-    type: 'select',
-    required: true,
-    options: Object.entries(encryptionTypeMapping).map(([value, label]) => ({
-      value,
-      label
-    }))
+    key: 'expireTime',
+    label: '到期时间',
+    type: 'datetime',
+    required: true
   }
 ]
 
@@ -335,10 +303,10 @@ const fetchData = async (page = 1, pageSize = 20) => {
       method: 'post',
       data: {
         sid: selectedSoftware.value,
-				page: {
-					currentPage: page,
-					pageSize: pageSize
-				}
+        page: {
+          currentPage: page,
+          pageSize: pageSize
+        }
       },
       url: '/api/web/get-interface'
     })
@@ -346,10 +314,10 @@ const fetchData = async (page = 1, pageSize = 20) => {
     if (response.data.code === 200) {
       dataList.value = response.data.data.map((item) => ({
         name: item.name,
-				function: item.function,
-				url: item.url,
-				description: item.desc,
-				encryption: item.encryption
+        username: item.username,
+        machineCode: item.machineCode,
+        expireTime: item.expireTime,
+        status: item.status
       }))
       total.value = response.data.total || 0
       lastPage.value = Math.ceil(total.value / pageSize)
@@ -373,12 +341,12 @@ const fetchData = async (page = 1, pageSize = 20) => {
 // 编辑处理
 const handleEdit = (item) => {
   itemToEdit.value = {
-	 name: item.name,
-   function: String(item.function),
-   encryption: String(item.encryption), // 确保转换为字符串
-   description: item.description,
-   url: item.url
- }
+    name: item.name,
+    status: item.status,
+    expireTime: item.expireTime,
+    username: item.username,
+    machineCode: item.machineCode
+  }
   showEditModal.value = true
 }
 
@@ -401,22 +369,6 @@ const handleBatchDelete = () => {
 // 选择变化处理
 const handleSelectionChange = (items) => {
   selectedItems.value = items
-}
-
-// 复制成功处理
-const handleCopySuccess = () => {
-  message.value.show({
-    type: 'success',
-    content: '密钥已复制到剪贴板'
-  })
-}
-
-// 复制失败处理
-const handleCopyError = () => {
-  message.value.show({
-    type: 'error',
-    content: '复制失败，请手动复制'
-  })
 }
 
 // 确认删除
@@ -464,40 +416,41 @@ const cancelDelete = () => {
 
 // 保存编辑
 const saveEdit = async (formData) => {
-
-	try{
-		loading.value = true
-		const response = await api({
-			method: 'post',
-			data: {
-					sid: selectedSoftware.value,
-					url: [itemToEdit.value.url],
-					encryption: formData.encryption
-			},
-			url: '/api/web/update-interface'
-		})
-
-		if(response.data.code === 200){
-			message.value.show({
-				type: 'success',
-				content: '编辑成功'
-			})
-			await fetchData(currentPage.value, pageSize.value)
-		}else{
-			message.value.show({
-				type: 'error',
-				content: response.data.message || '编辑失败'
-			})
-		}
-	}catch(err){
-		message.value.show({
-			type: 'error',
-			content: err.response.data.message || '编辑失败'
-		})
-	}finally{
-		loading.value = false
-		showEditModal.value = false
-	}
+  try{
+    loading.value = true
+    const response = await api({
+      method: 'post',
+      data: {
+        sid: selectedSoftware.value,
+        status: formData.status,
+        expireTime: formData.expireTime,
+        username: formData.username,
+        machineCode: formData.machineCode
+      },
+      url: '/api/web/update-user'
+    })
+	
+    if(response.data.code === 200){
+      message.value.show({
+        type: 'success',
+        content: '编辑成功'
+      })
+      await fetchData(currentPage.value, pageSize.value)
+    }else{
+      message.value.show({
+        type: 'error',
+        content: response.data.message || '编辑失败'
+      })
+    }
+  }catch(err){
+    message.value.show({
+      type: 'error',
+      content: err.response.data.message || '编辑失败'
+    })
+  }finally{
+    loading.value = false
+    showEditModal.value = false
+  }
 }
 
 // 取消编辑
@@ -599,49 +552,6 @@ const cancelBatchDelete = () => {
   showBatchDeleteModal.value = false
 }
 
-// 处理添加按钮点击
-const handleAddClick = () => {
-  showAddModal.value = true
-}
-
-// 添加新增表单字段定义
-const handleAddSave = async (formData) => {
-  try {
-    loading.value = true
-    // 这里添加实际的API调用
-    const response = await api({
-      method: 'post',
-      data: {
-        sid: selectedSoftware.value,
-				function: formData.function,
-				encryption: formData.encryption
-      },
-      url: '/api/web/add-interface'
-    })
-
-    if (response.data.code === 200) {
-      message.value.show({
-        type: 'success',
-        content: '添加成功'
-      })
-      await fetchData(currentPage.value, pageSize.value)
-    } else {
-      message.value.show({
-        type: 'error',
-        content: response.data.message || '添加失败'
-      })
-    }
-  } catch (err) {
-    message.value.show({
-      type: 'error',
-      content: err.response?.data?.message || '添加失败'
-    })
-  } finally {
-    loading.value = false
-    showAddModal.value = false
-  }
-}
-
 // 分页切换
 const handlePageChange = async (newPage) => {
   currentPage.value = newPage
@@ -662,32 +572,6 @@ onMounted(() => {
 defineExpose({
   fetchData
 })
-
-// 复制到贴板功能
-const copyToClipboard = async (text) => {
-  try {
-    await navigator.clipboard.writeText(text)
-    message.value.show({
-      type: 'success',
-      content: '密钥已复制到剪贴板'
-    })
-  } catch (err) {
-    message.value.show({
-      type: 'error',
-      content: '复制失败，请手动复制'
-    })
-  }
-}
-
-// 获取登录形式标签样式
-const getCodeTypeTagClass = (type) => {
-  const typeClasses = {
-    '0': 'bg-green-100 text-green-800',
-    '1': 'bg-yellow-100 text-yellow-800',
-    '2': 'bg-red-100 text-red-800'
-  }
-  return typeClasses[type] || 'bg-gray-100 text-gray-800'
-}
 </script>
 
 <style scoped>

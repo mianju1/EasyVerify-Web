@@ -261,7 +261,15 @@ const formatTime = (timestamp) => {
 	if (timestamp == 0 || timestamp == null) {
 		return '未激活'
 	}
-	return new Date(timestamp).toLocaleString()
+	return new Date(timestamp).toLocaleString('zh-CN', {
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+		hour: '2-digit',
+		minute: '2-digit',
+		second: '2-digit',
+		hour12: false
+	}).replace(/\//g, '-')
 }
 
 // 获取数据
@@ -529,10 +537,35 @@ defineExpose({
 
 // 判断是否已过期
 const isExpired = (dateString) => {
-	if (!dateString) return false;
-	const expireDate = new Date(dateString);
-	const now = new Date();
-	return expireDate < now;
+	// 如果是"未激活"或者空值，返回false
+	if (!dateString || dateString === '未激活') {
+		return false
+	}
+	
+	try {
+		// 将格式化的日期字符串转换回 Date 对象
+		// 格式示例: 2024-12-20 14:47:14
+		const [datePart, timePart] = dateString.split(' ')
+		const [year, month, day] = datePart.split('-')
+		const [hour, minute, second] = timePart.split(':')
+		
+		const expireDate = new Date(
+			parseInt(year),
+			parseInt(month) - 1, // 月份需要减1
+			parseInt(day),
+			parseInt(hour),
+			parseInt(minute),
+			parseInt(second)
+		)
+		
+		// 检查是否是有效的日期
+		if (isNaN(expireDate.getTime())) return false
+		
+		const now = new Date()
+		return expireDate < now
+	} catch (error) {
+		return false
+	}
 }
 </script>
 

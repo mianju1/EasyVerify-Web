@@ -94,8 +94,6 @@ import { onMounted, ref } from 'vue'
 import ConfirmModal from './ConfirmModal.vue'
 import Message from './Message.vue'
 import api from '../../lib/axios'
-import { log } from '../../../node_modules/astro/dist/core/logger/core'
-import { e } from '../../../dist/_astro/runtime-core.esm-bundler.C2oPSN2g'
 
 // 数据
 const userId = ref('')
@@ -245,8 +243,10 @@ const handlePasswordConfirm = async () => {
 				content: response.data.message
 			})
 		}
-		getInfo()
-
+		// 3秒后跳转至登录
+		setTimeout(() => {
+			window.location.href = '/authentication/login'
+		}, 3000)
 	} catch (error) {
 		message.value.show({
 			type: 'error',

@@ -23,9 +23,8 @@
         :headerMapping="headerMapping"
         :id-field="'url'"
         :selectable="true"
-        @edit="handleEdit"
+        :show-edit="false"
         @delete="handleDelete"
-        @batch-edit="handleBatchEdit"
         @batch-delete="handleBatchDelete"
         @selection-change="handleSelectionChange"
       >
@@ -45,7 +44,7 @@
         <template #url="{ value }">
           <div class="flex items-center space-x-2">
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-purple-100 text-purple-800">
-              {{ BASE_URL + value }}
+              {{ value }}
             </span>
             <button 
               @click="copyToClipboard(value)"
@@ -72,6 +71,47 @@
             {{ encryptionTypeMapping[value] || value }}
           </span>
         </template>
+
+        <!-- 自定义更新时间列显示 -->
+        <template #updateTime="{ value }">
+          <span class="text-gray-600">{{ formatDateTime(value) }}</span>
+        </template>
+
+        <!-- 自定义加密公钥列显示 -->
+        <template #publicKey="{ value }">
+          <div class="flex items-center space-x-2">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800">
+              {{ truncateString(value) }}
+            </span>
+            <button 
+              @click="copyToClipboard(value)"
+              class="p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
+              title="复制公钥">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+              </svg>
+            </button>
+          </div>
+        </template>
+
+        <!-- 自定义加密私钥列显示 -->
+        <template #privateKey="{ value }">
+          <div class="flex items-center space-x-2">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-red-100 text-red-800">
+              {{ truncateString(value) }}
+            </span>
+            <button 
+              @click="copyToClipboard(value)"
+              class="p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
+              title="复制私钥">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+              </svg>
+            </button>
+          </div>
+        </template>
       </ShowEntity>
 
       <NavPagination 
@@ -96,28 +136,6 @@
       @cancel="cancelDelete"
     />
 
-    <!-- 编辑模态框 -->
-    <EditModal
-      v-model="showEditModal"
-      title="编辑应用信息"
-      :fields="editFormFields"
-      :initial-data="itemToEdit"
-      type="primary"
-      @save="saveEdit"
-      @cancel="cancelEdit"
-    />
-
-    <!-- 批量编辑模态框 -->
-    <EditModal
-      v-if="showBatchEditModal"
-      v-model="showBatchEditModal"
-      title="批量编辑"
-      :fields="batchEditFields"
-      type="primary"
-      @save="saveBatchEdit"
-      @cancel="cancelBatchEdit"
-    />
-
     <!-- 批量删除确认框 -->
     <ConfirmModal
       v-model="showBatchDeleteModal"
@@ -132,7 +150,7 @@
     <EditModal
       v-if="showAddModal"
       v-model="showAddModal"
-      title="新增API接口"
+      title="新增加密算法"
       :fields="addFormFields"
       type="primary"
       @save="handleAddSave"
@@ -152,8 +170,6 @@ import EditModal from '../components/EditModal.vue'
 import Message from '../components/Message.vue'
 import api from '../../lib/axios'
 import { log } from '../../../node_modules/astro/dist/core/logger/core'
-import { BASE_URL } from '../../app/constants'
-
 
 // 先声明必要的响应式变量
 const message = ref(null)
@@ -172,39 +188,36 @@ const selectedSoftware = ref(null)
 
 // 然后再定义 headerProps
 const headerProps = {
-  title: "API接口",
+  title: "加密算法",
   showSearch: false,
   showAddButton: true,
-  buttonText: '新增API接口',
+  buttonText: '新增加密算法',
   showSoftwareSelect: true,
   softwareList: softwareList
 }
 
 // 模态框状态
 const showDeleteModal = ref(false)
-const showEditModal = ref(false)
-const showBatchEditModal = ref(false)
 const showBatchDeleteModal = ref(false)
-const itemToEdit = ref(null)
 const itemToDelete = ref(null)
 const showAddModal = ref(false)
 
 // 表头定义
 const headers = [
   '程序名称',
-  '请求功能', 
-  '接口地址',
-  '接口描述',
-  '加密方式'
+  '加密方式',
+  '更新时间',
+  '加密公钥', 
+  '加密私钥'
 ]
 
 // 表头映射
 const headerMapping = {
   '程序名称': 'name',
-  '请求功能': 'function',
-  '接口地址': 'url',
-  '接口描述': 'description',
-  '加密方式': 'encryption'
+  '加密方式': 'encryption',
+  '更新时间': 'updateTime',
+  '加密公钥': 'publicKey',
+  '加密私钥': 'privateKey'
 }
 
 // 登录形式映射
@@ -216,7 +229,6 @@ const codeTypeMapping = {
 
 // 添加接口功能映射
 const functionTypeMapping = {
-  '0': '注册',
   '1': '账号登录',
   '2': '激活码登录',
   '3': '获取版本',
@@ -232,53 +244,8 @@ const encryptionTypeMapping = {
   '1': 'RSA2048'
 }
 
-// 编辑表单字段定义
-const editFormFields = [
-  {
-    key: 'name',
-    label: '程序名称', 
-    type: 'text',
-    placeholder: '请输入程序名称',
-		disabled: true
-  },
-  {
-    key: 'encryption',
-    label: '加密方式',
-    type: 'select',
-		required: true,
-    options: [
-      { value: '0', label: '无加密' },
-      { value: '1', label: 'RSA2048' }
-    ]
-  }
-]
-
-// 批量编辑字段
-const batchEditFields = [
-  {
-    key: 'encryption',
-    label: '加密方式',
-    type: 'select',
-    required: true,
-    options: Object.entries(encryptionTypeMapping).map(([value, label]) => ({
-      value,
-      label
-    }))
-  }
-]
-
 // 新增表单字段定义
 const addFormFields = [
-  {
-    key: 'function',
-    label: '接口功能',
-    type: 'select',
-    required: true,
-    options: Object.entries(functionTypeMapping).map(([value, label]) => ({
-      value,
-      label
-    }))
-  },
   {
     key: 'encryption',
     label: '加密方式',
@@ -332,25 +299,26 @@ const fetchData = async (page = 1, pageSize = 20) => {
   loading.value = true
   try {
     const response = await api({
-      method: 'post',
-      data: {
-        sid: selectedSoftware.value,
-				page: {
-					currentPage: page,
-					pageSize: pageSize
-				}
+      method: 'get',
+      params: {
+        sid: selectedSoftware.value
       },
-      url: '/api/web/get-interface'
+      url: '/api/encrypt/get-encryption'
     })
 
     if (response.data.code === 200) {
       dataList.value = response.data.data.map((item) => ({
-        name: item.name,
-				function: item.function,
-				url: item.url,
-				description: item.desc,
-				encryption: item.encryption
+        name: item.sname,
+        encryption: item.encryption,
+        updateTime: item.updateTime || '未设置',
+        publicKey: item.publicKey || '未设置',
+        privateKey: item.privateKey || '未设置'
       }))
+
+      if(dataList.value.length === 1 && dataList.value[0].encryption ===null){
+        dataList.value = []
+      }
+
       total.value = response.data.total || 0
       lastPage.value = Math.ceil(total.value / pageSize)
       currentPage.value = page
@@ -370,27 +338,10 @@ const fetchData = async (page = 1, pageSize = 20) => {
   }
 }
 
-// 编辑处理
-const handleEdit = (item) => {
-  itemToEdit.value = {
-	 name: item.name,
-   function: String(item.function),
-   encryption: String(item.encryption), // 确保转换为字符串
-   description: item.description,
-   url: item.url
- }
-  showEditModal.value = true
-}
-
 // 删除处理
 const handleDelete = (item) => {
   itemToDelete.value = item
   showDeleteModal.value = true
-}
-
-// 批量编辑处理
-const handleBatchEdit = () => {
-  showBatchEditModal.value = true
 }
 
 // 批量删除处理
@@ -407,7 +358,7 @@ const handleSelectionChange = (items) => {
 const handleCopySuccess = () => {
   message.value.show({
     type: 'success',
-    content: '密钥已复制到剪贴板'
+    content: '已复制到剪贴板'
   })
 }
 
@@ -429,9 +380,9 @@ const confirmDelete = async () => {
       method: 'post',
       data: {
 				sid: selectedSoftware.value,
-        url: [itemToDelete.value.url]
+        encryption: [itemToDelete.value.encryption]
       },
-      url: '/api/web/delete-interface'
+      url: '/api/encrypt/del-encryption'
     })
 
     if (response.data.code === 200) {
@@ -462,143 +413,6 @@ const cancelDelete = () => {
   itemToDelete.value = null
 }
 
-// 保存编辑
-const saveEdit = async (formData) => {
-
-	try{
-		loading.value = true
-		const response = await api({
-			method: 'post',
-			data: {
-					sid: selectedSoftware.value,
-					url: [itemToEdit.value.url],
-					encryption: formData.encryption
-			},
-			url: '/api/web/update-interface'
-		})
-
-		if(response.data.code === 200){
-			message.value.show({
-				type: 'success',
-				content: '编辑成功'
-			})
-			await fetchData(currentPage.value, pageSize.value)
-		}else{
-			message.value.show({
-				type: 'error',
-				content: response.data.message || '编辑失败'
-			})
-		}
-	}catch(err){
-		message.value.show({
-			type: 'error',
-			content: err.response.data.message || '编辑失败'
-		})
-	}finally{
-		loading.value = false
-		showEditModal.value = false
-	}
-}
-
-// 取消编辑
-const cancelEdit = () => {
-  showEditModal.value = false
-}
-
-// 保存批量编辑
-const saveBatchEdit = async (formData) => {
-  const editData = {}
-  selectedItems.value.forEach(sid => {
-    editData[sid] = formData
-  })
-
-	try{
-		loading.value = true
-		const response = await api({
-			method: 'post',
-			data: {
-				sid: selectedSoftware.value,
-				url: selectedItems.value,
-				encryption: formData.encryption
-			},
-			url: '/api/web/update-interface'
-		})
-
-		if(response.data.code === 200){
-			message.value.show({
-				type: 'success',
-				content: '批量编辑成功'
-			})
-			await fetchData(currentPage.value, pageSize.value)
-		}else{
-			message.value.show({
-				type: 'error',
-				content: response.data.message || '批量编辑失败'
-			})
-		}
-	}catch(err){
-		message.value.show({
-			type: 'error',
-			content: err.response.data.message || '批量编辑失败'
-		})
-	}finally{
-		loading.value = false
-	}
-
-  
-  showBatchEditModal.value = false
-  selectedItems.value = []
-}
-
-// 取消批量编辑
-const cancelBatchEdit = () => {
-  showBatchEditModal.value = false
-}
-
-// 确认批量删除
-const confirmBatchDelete = async () => {
-  try {
-    loading.value = true		
-    
-    const response = await api({
-      method: 'post',
-      data: {
-				sid: selectedSoftware.value,
-        url: selectedItems.value
-      },
-      url: '/api/web/delete-interface'
-    })
-
-    if (response.data.code === 200) {
-      message.value.show({
-        type: 'success',
-        content: '批量删除成功'
-      })
-      await fetchData(currentPage.value, pageSize.value)
-    } else {
-      message.value.show({
-        type: 'error',
-        content: response.data.message || '批量删除失败'
-      })
-    }
-  } catch (err) {
-    message.value.show({
-      type: 'error', 
-      content: err.response.data.message || '批量删除失败'
-    })
-  } finally {
-    loading.value = false
-  }
-
-  selectedItems.value = []
-  showBatchDeleteModal.value = false
-}
-
-// 取消批量删除
-const cancelBatchDelete = () => {
-  showBatchDeleteModal.value = false
-}
-
 // 处理添加按钮点击
 const handleAddClick = () => {
   showAddModal.value = true
@@ -613,10 +427,9 @@ const handleAddSave = async (formData) => {
       method: 'post',
       data: {
         sid: selectedSoftware.value,
-				function: formData.function,
 				encryption: formData.encryption
       },
-      url: '/api/web/add-interface'
+      url: '/api/encrypt/add-encryption'
     })
 
     if (response.data.code === 200) {
@@ -679,6 +492,12 @@ const copyToClipboard = async (text) => {
   }
 }
 
+// 添加字符串截断函数
+const truncateString = (str) => {
+  if (!str || str === '未设置') return str;
+  return str.length > 16 ? str.substring(0, 16) + '...' : str;
+}
+
 // 获取登录形式标签样式
 const getCodeTypeTagClass = (type) => {
   const typeClasses = {
@@ -687,6 +506,21 @@ const getCodeTypeTagClass = (type) => {
     '2': 'bg-red-100 text-red-800'
   }
   return typeClasses[type] || 'bg-gray-100 text-gray-800'
+}
+
+// 添加日期格式化函数
+const formatDateTime = (dateStr) => {
+  if (!dateStr || dateStr === '未设置') return dateStr;
+  
+  const date = new Date(dateStr);
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  
+  return `${year}年${month}月${day}日 ${hours}:${minutes}:${seconds}`;
 }
 </script>
 
