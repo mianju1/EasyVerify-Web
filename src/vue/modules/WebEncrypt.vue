@@ -21,48 +21,13 @@
         :headers="headers"
         :dataList="dataList"
         :headerMapping="headerMapping"
-        :id-field="'url'"
+        :id-field="'encryption'"
         :selectable="true"
         :show-edit="false"
         @delete="handleDelete"
         @batch-delete="handleBatchDelete"
         @selection-change="handleSelectionChange"
       >
-        <!-- 自定义程序名称列 -->
-        <template #name="{ value }">
-          <span class="font-medium text-gray-900">{{ value }}</span>
-        </template>
-
-        <!-- 自定义接口描述列 -->
-        <template #description="{ value }">
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800">
-            {{ value }}
-          </span>
-        </template>
-
-        <!-- 自定义链接列 -->
-        <template #url="{ value }">
-          <div class="flex items-center space-x-2">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-purple-100 text-purple-800">
-              {{ value }}
-            </span>
-            <button 
-              @click="copyToClipboard(value)"
-              class="p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
-              title="复制链接">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                    d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-              </svg>
-            </button>
-          </div>
-        </template>
-        <!-- 自定义功能列显示 -->
-        <template #function="{ value }">
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800">
-            {{ functionTypeMapping[value] || value }}
-          </span>
-        </template>
 
         <!-- 自定义加密方式列显示 -->
         <template #encryption="{ value }">
@@ -521,6 +486,50 @@ const formatDateTime = (dateStr) => {
   const seconds = String(date.getSeconds()).padStart(2, '0');
   
   return `${year}年${month}月${day}日 ${hours}:${minutes}:${seconds}`;
+}
+
+// 确认批量删除
+const confirmBatchDelete = async () => {
+  try {
+    loading.value = true
+    const encryptionValues = selectedItems.value.map(item => item.encryption)
+    
+    const response = await api({
+      method: 'post',
+      data: {
+        sid: selectedSoftware.value,
+        encryption: selectedItems.value
+      },
+      url: '/api/encrypt/del-encryption'
+    })
+
+    if (response.data.code === 200) {
+      message.value.show({
+        type: 'success',
+        content: '批量删除成功'
+      })
+      await fetchData(currentPage.value, pageSize.value)
+    } else {
+      message.value.show({
+        type: 'error',
+        content: response.data.message || '批量删除失败'
+      })
+    }
+  } catch (err) {
+    message.value.show({
+      type: 'error',
+      content: err.response?.data?.message || '批量删除失败'
+    })
+  } finally {
+    showBatchDeleteModal.value = false
+    selectedItems.value = []
+  }
+}
+
+// 取消批量删除
+const cancelBatchDelete = () => {
+  showBatchDeleteModal.value = false
+  selectedItems.value = []
 }
 </script>
 

@@ -25,9 +25,9 @@
         :headerMapping="headerMapping"
         :id-field="'username'"
         :selectable="true"
+        :show-batch-edit="false"
         @edit="handleEdit"
         @delete="handleDelete"
-        @batch-edit="handleBatchEdit"
         @batch-delete="handleBatchDelete"
         @selection-change="handleSelectionChange"
       >
@@ -35,13 +35,6 @@
         <template #username="{ value }">
           <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-purple-100 text-purple-800">
             {{ value }}
-          </span>
-        </template>
-
-        <!-- 自定义机器码列 -->
-        <template #machineCode="{ value }">
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800">
-            {{ value || '未绑定'}}
           </span>
         </template>
 
@@ -61,15 +54,15 @@
           </div>
         </template>
 
-        <!-- 自定义用户状态列 -->
-        <template #status="{ value }">
-  <span :class="[
-    'inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium',
-    value === '-1' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-  ]">
-    {{ userStatusMapping[value] }}
-  </span>
-</template>
+        <!-- 自定义最近登录时间列 -->
+        <template #lastLoginTime="{ value }">
+          <div class="flex items-center">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-gray-100 text-gray-800">
+              {{ value }}
+            </span>
+          </div>
+        </template>
+
       </ShowEntity>
 
       <NavPagination 
@@ -103,17 +96,6 @@
       type="primary"
       @save="saveEdit"
       @cancel="cancelEdit"
-    />
-
-    <!-- 批量编辑模态框 -->
-    <EditModal
-      v-if="showBatchEditModal"
-      v-model="showBatchEditModal"
-      title="批量编辑"
-      :fields="batchEditFields"
-      type="primary"
-      @save="saveBatchEdit"
-      @cancel="cancelBatchEdit"
     />
 
     <!-- 批量删除确认框 -->
@@ -159,12 +141,12 @@ const selectedSoftware = ref(null)
 
 // 然后再定义 headerProps
 const headerProps = {
-  title: "绑定用户",
+  title: "用户管理",
   showSearch: true,
   showAddButton: false,
   showSoftwareSelect: true,
   softwareList: softwareList,
-  searchPlaceholder: '搜索用户名/机器码/激活码'
+  searchPlaceholder: '搜索用户名'
 }
 
 // 添加搜索关键词变量
@@ -192,26 +174,19 @@ const itemToDelete = ref(null)
 // 表头定义
 const headers = [
   '程序名称',
-  '激活码',
-  '用户名/机器码',
+  '用户名',
   '到期时间',
-  '用户状态'
+  '最近登录时间'
 ]
 
 // 表头映射
 const headerMapping = {
   '程序名称': 'name',
-  '激活码': 'username',
-  '用户名/机器码': 'machineCode',
+  '用户名': 'username',
   '到期时间': 'expireTime',
-  '用户状态': 'status'
+  '最近登录时间': 'lastLoginTime'
 }
 
-// 添加用户状态映射
-const userStatusMapping = {
-  '-1': '正常',
-  '0': '禁用'
-}
 
 // 修改编辑表单字段定义
 const editFormFields = [
@@ -223,49 +198,18 @@ const editFormFields = [
     disabled: true
   },
   {
-    key: 'status',
-    label: '用户状态',
-    type: 'select',
-    required: true,
-    options: [
-      { value: '-1', label: '正常' },
-      { value: '0', label: '禁用' }
-    ]
-  },
-  {
-    key: 'expireTime',
-    label: '到期时间',
-    type: 'datetime',
-    required: false,
-    format: 'YYYY-MM-DD HH:mm:ss'
-  },
-  {
-    key: 'machineCode',
-    label: '机器码',
+    key: 'username',
+    label: '用户名',
     type: 'text',
-    required: false,
-    placeholder: '请输入机器码'
-  }
-]
-
-// 批量编辑字段
-const batchEditFields = [
-  {
-    key: 'status',
-    label: '用户状态',
-    type: 'select',
     required: true,
-    options: Object.entries(userStatusMapping).map(([value, label]) => ({
-      value,
-      label
-    }))
+		disabled: true
   },
   {
-    key: 'machineCode',
-    label: '机器码',
+    key: 'password',
+    label: '修改密码',
     type: 'text',
-    required: false,
-    placeholder: '请输入机器码'
+    required: true,
+    placeholder: '请输入要修改的密码'
   }
 ]
 
@@ -348,16 +292,15 @@ const fetchData = async (page = 1, pageSize = 20) => {
           pageSize: pageSize
         }
       },
-      url: '/api/user/get-user'
+      url: '/api/user/manager-user-get'
     })
 
     if (response.data.code === 200) {
       dataList.value = response.data.data.map((item) => ({
         name: item.sname,
-        username: item.code,
-        machineCode: item.machineCode,
+        username: item.username,
         expireTime: formatTime(item.expiredTime),
-        status: item.score.toString()
+        lastLoginTime: formatTime(item.lastLoginTime),
       }))
       total.value = response.data.total || 0
       lastPage.value = Math.ceil(total.value / pageSize)
@@ -396,11 +339,6 @@ const handleDelete = (item) => {
   showDeleteModal.value = true
 }
 
-// 批量编辑处理
-const handleBatchEdit = () => {
-  showBatchEditModal.value = true
-}
-
 // 批量删除处理
 const handleBatchDelete = () => {
   showBatchDeleteModal.value = true
@@ -421,9 +359,9 @@ const confirmDelete = async () => {
       method: 'post',
       data: {
 				sid: selectedSoftware.value,
-        code: [itemToDelete.value.username]
+        username: [itemToDelete.value.username]
       },
-      url: '/api/user/del-user'
+      url: '/api/user/manager-user-delete'
     })
 
     if (response.data.code === 200) {
@@ -485,20 +423,21 @@ const convertDateStringToTimestamp = (dateString) => {
 const saveEdit = async (formData) => {
   try {
     loading.value = true
-  
-    // 确保时间格式正确
-    const expiredTime = formData.expireTime ? convertDateStringToTimestamp(formData.expireTime) : null
+    
+    const requestData = {
+      sid: selectedSoftware.value,
+      username: formData.username
+    }
+
+    // 只有当密码字段有值时才添加到请求数据中
+    if (formData.password) {
+      requestData.password = formData.password
+    }
     
     const response = await api({
       method: 'post',
-      data: {
-        sid: selectedSoftware.value,
-        status: formData.status,
-        expiredTime: expiredTime,
-        code: [formData.username],
-        machineCode: formData.machineCode
-      },
-      url: '/api/user/update-user'
+      data: requestData,
+      url: '/api/user/manager-user-update'
     })
 
     if (response.data.code === 200) {
@@ -527,63 +466,6 @@ const saveEdit = async (formData) => {
 // 取消编辑
 const cancelEdit = () => {
   showEditModal.value = false
-}
-
-// 保存批量编辑
-const saveBatchEdit = async (formData) => {
-  try {
-    if (selectedItems.value.length === 0) {
-      message.value.show({
-        type: 'warning',
-        content: '请先选择要编辑的记录'
-      })
-      return
-    }
-    loading.value = true
-
-    const selectedCodes = selectedItems.value.map(item => item.username)
-
-    const response = await api({
-      method: 'post',
-      data: {
-        sid: selectedSoftware.value,
-        status: formData.status,
-        ...(formData.expireTime && {
-          expiredTime: convertDateStringToTimestamp(formData.expireTime)
-        }),
-        code: selectedItems.value,
-        machineCode: formData.machineCode
-      },
-      url: '/api/user/update-user'
-    })
-
-    if (response.data.code === 200) {
-      message.value.show({
-        type: 'success',
-        content: '批量编辑成功'
-      })
-      await fetchData(currentPage.value, pageSize.value)
-    } else {
-      message.value.show({
-        type: 'error',
-        content: response.data.message || '批量编辑失败'
-      })
-    }
-  } catch (err) {
-    message.value.show({
-      type: 'error',
-      content: err.response.data.message || '批量编辑失败'
-    })
-  } finally {
-    loading.value = false
-    showBatchEditModal.value = false
-    selectedItems.value = []
-  }
-}
-
-// 取消批量编辑
-const cancelBatchEdit = () => {
-  showBatchEditModal.value = false
 }
 
 // 确认批量删除

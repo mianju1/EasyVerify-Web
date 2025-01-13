@@ -20,7 +20,7 @@
 								<th scope="col" class="p-4 text-xs font-medium text-right text-gray-500 uppercase w-[200px]">
 									<div v-if="showBatchButtons" class="flex justify-end space-x-2">
 										<slot name="batch-actions">
-											<button v-if="showEdit" 
+											<button v-if="showBatchEdit" 
 													@click="$emit('batch-edit')" 
 													class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300">
 												<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -108,6 +108,10 @@ const props = defineProps({
 		default: 'id'
 	},
 	showEdit: {
+		type: Boolean,
+		default: true
+	},
+	showBatchEdit: {
 		type: Boolean,
 		default: true
 	}

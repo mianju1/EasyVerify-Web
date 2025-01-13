@@ -45,7 +45,7 @@
         <template #url="{ value }">
           <div class="flex items-center space-x-2">
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-purple-100 text-purple-800">
-              {{ BASE_URL + value }}
+              {{ value }}
             </span>
             <button 
               @click="copyToClipboard(value)"
@@ -222,7 +222,7 @@ const functionTypeMapping = {
   '3': '获取版本',
   '4': '获取公告',
   '5': '获取指定用户到期时间',
-  '6': '获取最新版本号',
+  '6': '是否为当前最新版本',
   '7': '修改用户密码'
 }
 
