@@ -2,27 +2,86 @@
 
 import ApexCharts from 'apexcharts';
 import api from '../lib/axios';
-import Message from '../vue/components/Message.vue'
 
-
-const fetchOnlineCount = async () => {
-	const response = await api({
-		method: 'get',
-		url: '/api/dev/last7days'
-	})
-	// alert(JSON.stringify(response.data.data))
-	if (response.data.code === 200) {
-		return response.data.data;
-	}else {
-		message.value.show({
-			type: 'error',
-			content: response.data.message || '请求失败'
-		})
-		return [];
+// 生成最近7天的日期
+const getLast7Days = () => {
+	const dates = [];
+	for (let i = 6; i >= 0; i--) {
+		const date = new Date();
+		date.setDate(date.getDate() - i);
+		dates.push(date.toISOString().split('T')[0]); // 格式: YYYY-MM-DD
 	}
+	return dates;
+};
+
+// 预定义的颜色集合
+const colorPool = ['#99A7C0', '#808284', '#70706E', '#C0C8C0', '#91A08E','#647489','#7A8A98','#D0D0D0','#E0E0D0','#76846A'];
+
+// 添加类型定义
+interface ApiResponse {
+	id: number;
+	code: number;
+	data: {
+		[key: string]: {
+			[date: string]: number;
+		};
+	};
+	total: number | null;
+	message: string;
 }
 
-const getMainChartOptions = () => {
+interface ProcessedData {
+	softwareList: {
+		name: string;
+		values: number[];
+		color: string;
+	}[];
+	dates: string[];
+}
+
+// 修改 fetchOnlineCount 函数
+const fetchOnlineCount = async (): Promise<ProcessedData> => {
+	try {
+		const response = await api<ApiResponse>({
+			method: 'get',
+			url: '/api/dev/last7days'
+		});
+
+		if (response.data.code === 200) {
+			// 获取最近7天的日期
+			const dates = getLast7Days();
+			
+			// 处理每个软件的数据
+			const softwareList = Object.entries(response.data.data).map(([name, dateData], index) => {
+				// 对每一天进行检查，如果没有数据则填充0
+				const values = dates.map(date => dateData[date] || 0);
+				
+				return {
+					name,
+					values,
+					color: colorPool[index % colorPool.length] // 循环使用颜色池中的颜色
+				};
+			});
+
+			return {
+				softwareList,
+				dates
+			};
+		} else {
+			throw new Error(response.data.message || '请求失败');
+		}
+	} catch (error) {
+		console.error('获取数据失败:', error);
+		// 返回空数据结构
+		return {
+			softwareList: [],
+			dates: getLast7Days()
+		};
+	}
+};
+
+// 修改 getMainChartOptions 函数中的数据获取部分
+const getMainChartOptions = async () => {
 	let mainChartColors = {};
 
 	if (document.documentElement.classList.contains('dark')) {
@@ -44,14 +103,6 @@ const getMainChartOptions = () => {
 	// 预定义的颜色集合
 	const colorPool = ['#99A7C0', '#808284', '#70706E', '#C0C8C0', '#91A08E','#647489','#7A8A98','#D0D0D0','#E0E0D0','#76846A'];
 	
-	// 从颜色池中随机获取不重复的颜色
-	const getRandomColors = (count: number) => {
-		const shuffled = [...colorPool].sort(() => 0.5 - Math.random());
-		return shuffled.slice(0, count);
-	};
-
-	const randomColors = getRandomColors(5); // 获取2个随机颜色
-
 	// 生成最近7天的日期
 	const getLast7Days = () => {
 		const dates = [];
@@ -63,24 +114,9 @@ const getMainChartOptions = () => {
 		return dates;
 	};
 
+	// 获取数据
+	const data = await fetchOnlineCount();
 	
-	
-	const data = {
-		softwareList: [
-			{
-				name: '软件A',
-				values: [25, 42, 15, 38, 31, 28, 35],  // 7个数据点
-				color: randomColors[0]
-			},
-			{
-				name: '软件B',
-				values: [15, 32, 25, 48, 21, 38, 42],  // 7个数据点
-				color: randomColors[1]
-			}
-		],
-		dates: getLast7Days()
-	};
-
 	return {
 		chart: {
 			height: 420,
@@ -198,17 +234,24 @@ const getMainChartOptions = () => {
 	};
 };
 
+// 修改图表初始化部分
 if (document.getElementById('main-chart')) {
-	const chart = new ApexCharts(
-		document.getElementById('main-chart'),
-		getMainChartOptions(),
-	);
-	chart.render();
+	const initChart = async () => {
+		const options = await getMainChartOptions();
+		const chart = new ApexCharts(
+			document.getElementById('main-chart'),
+			options
+		);
+		await chart.render();
 
-	// init again when toggling dark mode
-	document.addEventListener('dark-mode', () => {
-		chart.updateOptions(getMainChartOptions());
-	});
+		// 初始化暗色模式切换
+		document.addEventListener('dark-mode', async () => {
+			const newOptions = await getMainChartOptions();
+			await chart.updateOptions(newOptions);
+		});
+	};
+
+	initChart().catch(console.error);
 }
 
 if (document.getElementById('new-products-chart')) {
