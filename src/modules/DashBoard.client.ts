@@ -1,6 +1,26 @@
 /* eslint-disable max-lines */
 
 import ApexCharts from 'apexcharts';
+import api from '../lib/axios';
+import Message from '../vue/components/Message.vue'
+
+
+const fetchOnlineCount = async () => {
+	const response = await api({
+		method: 'get',
+		url: '/api/dev/last7days'
+	})
+	// alert(JSON.stringify(response.data.data))
+	if (response.data.code === 200) {
+		return response.data.data;
+	}else {
+		message.value.show({
+			type: 'error',
+			content: response.data.message || '请求失败'
+		})
+		return [];
+	}
+}
 
 const getMainChartOptions = () => {
 	let mainChartColors = {};
@@ -43,6 +63,8 @@ const getMainChartOptions = () => {
 		return dates;
 	};
 
+	
+	
 	const data = {
 		softwareList: [
 			{

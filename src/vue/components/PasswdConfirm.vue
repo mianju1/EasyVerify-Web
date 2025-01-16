@@ -127,6 +127,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import Message from './Message.vue';
+import api from '../../lib/axios'
 
 const props = defineProps({
 	url: String,
@@ -226,7 +227,7 @@ const hideError = () => {
 	errorDiv.classList.remove('flex');
 };
 
-const handleSubmit = () => {
+const handleSubmit =async() => {
 	validateEmail();
 	validateUsername();
 	validatePasswords();
@@ -253,8 +254,43 @@ const handleSubmit = () => {
 		password: password.value,
 		confirmPassword: confirmPassword.value
 	};
+	try{
+		const response = await api({
+		method: 'post',
+			data: {
+				email: email.value,
+				code: verifyCode.value,
+				username: username.value,
+				password: password.value
+			},
+			url: '/api/auth/register'
+	})
+	if (response.data.code === 200) {
 
-	alert('注册数据：\n' + JSON.stringify(registerData, null, 2));
+		message.value.show({
+			type: 'success',
+			content: '注册成功！',
+			duration: 3000
+		});
+		// 等待3秒后跳转到登录页面
+		setTimeout(() => {
+			router.push('/authentication/login');
+		}, 3000);
+
+		}else {
+			message.value.show({
+				type: 'error',
+				content: response.data.message || '请求失败'
+			})
+		}
+
+	}catch (error) {
+		message.value.show({
+      type: 'error',
+      content: error.response.data.message || '注册失败，未知错误'
+    })
+	}
+
 };
 
 const sendVerifyCode = async () => {
@@ -265,7 +301,14 @@ const sendVerifyCode = async () => {
 
 	try {
 		// 这里添加发送验证码的API调用
-		// await sendVerifyCodeAPI(email.value);
+		const response = await api({
+			method: 'get',
+			params: {
+				email: email.value,
+				type: 'register'
+			},
+			url: '/api/auth/email-code'
+		})
 		
 		// 设置倒计时
 		cooldown.value = 60;
@@ -276,6 +319,7 @@ const sendVerifyCode = async () => {
 				clearInterval(cooldownTimer.value);
 			}
 		}, 1000);
+		if (response.data.code === 200) {
 
 		// 显示成功消息
 		message.value.show({
@@ -283,6 +327,12 @@ const sendVerifyCode = async () => {
 			content: '验证码已发送至邮箱：' + email.value,
 			duration: 3000
 		});
+		}else {
+      message.value.show({
+        type: 'error',
+        content: response.data.message || '请求失败'
+      })
+    }
 
 	} catch (error) {
 		// 如果发送失败，显示错误消息

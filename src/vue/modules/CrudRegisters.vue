@@ -14,7 +14,7 @@
 				@cancel="() => showAddModal = false" />
 
 			<ShowEntity :headers="headers" :dataList="dataList" :headerMapping="headerMapping" :id-field="'code'"
-				 :show-edit="false" @delete="handleDelete" @batch-delete="handleBatchDelete"
+				 :show-edit="false" @delete="handleDelete" @batch-delete="handleBatchDelete" :show-batch-edit="false"
 				@selection-change="handleSelectionChange">
 
 				<template #timeType="{ value }">
