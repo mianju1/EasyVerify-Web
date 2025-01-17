@@ -90,7 +90,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import ConfirmModal from './ConfirmModal.vue'
 import Message from './Message.vue'
 import api from '../../lib/axios'
@@ -124,7 +124,7 @@ const getInfo = async () => {
 		method: 'get',
 		url: '/api/dev/info',
 		params: {
-			d_name: document.cookie.split('username=')[1]
+			d_name: username.value
 		}
 	})
 	if (response.data.code === 200) {
@@ -270,6 +270,8 @@ const handleSaveConfirm = async () => {
 				content: '邮箱设置成功'
 			})
 			getInfo()
+			emailCode.value = ''
+			newEmail.value = ''
 		} else {
 			message.value.show({
 				type: 'error',
@@ -326,13 +328,18 @@ const handleGetVerifyCode = async (type) => {
 	}, 1000)
 }
 
-// 接收props
-defineProps({
+// 接收props并设置username的值
+const props = defineProps({
 	initialUsername: {
 		type: String,
 		default: ''
 	}
 })
+
+// 监听 props.initialUsername 的变化并更新 username
+watch(() => props.initialUsername, (newVal) => {
+	username.value = newVal
+}, { immediate: true })
 
 onMounted(() => {
 	getInfo()

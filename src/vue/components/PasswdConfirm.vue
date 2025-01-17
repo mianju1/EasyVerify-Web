@@ -274,8 +274,8 @@ const handleSubmit =async() => {
 		});
 		// 等待3秒后跳转到登录页面
 		setTimeout(() => {
-			router.push('/authentication/login');
-		}, 3000);
+			window.location.href = '/authentication/login';
+		}, 1500);
 
 		}else {
 			message.value.show({

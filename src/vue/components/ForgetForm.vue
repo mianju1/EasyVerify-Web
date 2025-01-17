@@ -91,6 +91,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import Message from './Message.vue';
+import api from '../../lib/axios'
 
 const props = defineProps({
 	url: String,
@@ -172,7 +173,7 @@ const hideError = () => {
 	errorDiv.classList.remove('flex');
 };
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
 	validateEmail();
 	validatePasswords();
 
@@ -192,7 +193,41 @@ const handleSubmit = () => {
 		confirmPassword: confirmPassword.value
 	};
 
-	alert('重置数据：\n' + JSON.stringify(registerData, null, 2));
+	try{
+		const response = await api({
+		method: 'post',
+			data: {
+				email: email.value,
+				code: verifyCode.value,
+				password: password.value
+			},
+			url: '/api/auth/reset-password'
+	})
+	if (response.data.code === 200) {
+
+		message.value.show({
+			type: 'success',
+			content: '密码重置成功！',
+			duration: 3000
+		});
+		// 等待3秒后跳转到登录页面
+		setTimeout(() => {
+			window.location.href = '/authentication/login';
+		}, 1500);
+
+		}else {
+			message.value.show({
+				type: 'error',
+				content: response.data.message || '请求失败'
+			})
+		}
+
+	}catch (error) {
+		message.value.show({
+      type: 'error',
+      content: error.response.data.message || '密码重置失败，未知错误'
+    })
+	}
 };
 
 const sendVerifyCode = async () => {
@@ -203,7 +238,14 @@ const sendVerifyCode = async () => {
 
 	try {
 		// 这里添加发送验证码的API调用
-		// await sendVerifyCodeAPI(email.value);
+		const response = await api({
+			method: 'get',
+			params: {
+				email: email.value,
+				type: 'reset'
+			},
+			url: '/api/auth/email-code'
+		})
 		
 		// 设置倒计时
 		cooldown.value = 60;
@@ -215,18 +257,26 @@ const sendVerifyCode = async () => {
 			}
 		}, 1000);
 
-		// 显示成功消息
-		message.value.show({
-			type: 'success',
-			content: '验证码已发送至邮箱：' + email.value,
-			duration: 3000
-		});
+		if (response.data.code === 200) {
+
+// 显示成功消息
+message.value.show({
+	type: 'success',
+	content: '验证码已发送至邮箱：' + email.value,
+	duration: 3000
+});
+}else {
+	message.value.show({
+		type: 'error',
+		content: response.data.message || '请求失败'
+	})
+}
 
 	} catch (error) {
 		// 如果发送失败，显示错误消息
 		message.value.show({
 			type: 'error',
-			content: '验证码发送失败，请稍后重试',
+			content: error.message || '请求失败',
 			duration: 3000
 		});
 	}
