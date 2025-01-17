@@ -9,8 +9,7 @@ const DEV_PORT = 2121;
 
 // https://astro.build/config
 export default defineConfig({
-  site: process.env.CI ? 'https://themesberg.github.io' : `http://localhost:${DEV_PORT}`,
-  base: process.env.CI ? '/flowbite-astro-admin-dashboard' : undefined,
+  base: process.env.CI ? '/dashboard' : undefined,
   output: 'server',
   adapter: node({
     mode: 'standalone'
@@ -21,7 +20,8 @@ export default defineConfig({
 
   server: {
     /* Dev. server only */
-    port: DEV_PORT
+    port: DEV_PORT,
+		host: '0.0.0.0'
   },
 	// 重定向
 	redirects:{

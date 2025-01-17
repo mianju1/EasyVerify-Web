@@ -152,7 +152,6 @@ import EditModal from '../components/EditModal.vue'
 import Message from '../components/Message.vue'
 import api from '../../lib/axios'
 import { log } from '../../../node_modules/astro/dist/core/logger/core'
-import { BASE_URL } from '../../app/constants'
 
 
 // 先声明必要的响应式变量
