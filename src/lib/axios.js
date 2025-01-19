@@ -2,8 +2,9 @@ import axios from 'axios';
 
 // 创建 axios 实例
 const instance = axios.create({
-	baseURL: 'http://localhost:8080', // 设置基础URL
-	timeout: 5000, // 设置超时时间
+	// baseURL: 'http://localhost:8080', // 设置基础URL
+	baseURL: 'https://api.easyverify.mian-ju.cn', // 设置基础URL
+	timeout: 7000, // 设置超时时间
 	headers: {
 		'Content-Type': 'application/json'
 	}

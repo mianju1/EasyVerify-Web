@@ -1,7 +1,6 @@
 import { defineMiddleware } from 'astro/middleware';
 
 const publicPages = [
-	'/',
 	'/authentication/login',
 	'/authentication/register',
 	'/authentication/forget'
