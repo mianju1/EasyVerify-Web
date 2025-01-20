@@ -6,14 +6,33 @@
         <button class="close-btn" @click="close" aria-label="关闭">&times;</button>
       </div>
       <div class="modal-body">
-        <MdPreview
-          v-if="content"
-          :modelValue="content"
-          :language="language"
-          :preview-theme="previewTheme"
-          :show-code-row-number="true"
-          :markdown-theme="markdownTheme"
-        />
+        <div class="content-wrapper">
+          <div class="outline" v-if="outline.length">
+            <h3 class="outline-title">目录</h3>
+            <div class="outline-items">
+              <div
+                v-for="(item, index) in outline"
+                :key="index"
+                class="outline-item"
+                :style="{ paddingLeft: `${item.level * 12}px` }"
+                @click="scrollToHeader(item.text)"
+              >
+                {{ item.text }}
+              </div>
+            </div>
+          </div>
+          <div class="main-content">
+            <MdPreview 
+              v-if="content"
+              :modelValue="content"
+              :language="language"
+              :preview-theme="previewTheme"
+              :show-code-row-number="true"
+              :markdown-theme="markdownTheme"
+              @onHtmlChanged="handleHtmlChanged"
+            />
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -31,6 +50,7 @@ const docTitle = ref('文档查看')
 const language = 'zh-CN'
 const previewTheme = 'default'
 const markdownTheme = 'default'
+const outline = ref([])
 
 const loadContent = async (path) => {
   if (!path) return
@@ -70,6 +90,26 @@ const handleShowDoc = (event) => {
   showDoc(event)
 }
 
+const handleHtmlChanged = (html) => {
+  // 解析文档中的标题
+  const tempDiv = document.createElement('div')
+  tempDiv.innerHTML = html
+  const headers = tempDiv.querySelectorAll('h1, h2, h3, h4, h5, h6')
+  
+  outline.value = Array.from(headers).map(header => ({
+    level: parseInt(header.tagName.charAt(1)) - 1,
+    text: header.textContent
+  }))
+}
+
+const scrollToHeader = (headerText) => {
+  const headers = document.querySelectorAll('.md-editor-preview h1, .md-editor-preview h2, .md-editor-preview h3, .md-editor-preview h4, .md-editor-preview h5, .md-editor-preview h6')
+  const header = Array.from(headers).find(h => h.textContent === headerText)
+  if (header) {
+    header.scrollIntoView({ behavior: 'smooth' })
+  }
+}
+
 onMounted(() => {
   window.addEventListener('show-doc', handleShowDoc)
 })
@@ -101,9 +141,9 @@ onUnmounted(() => {
 .modal-content {
   background-color: white;
   border-radius: 8px;
-  width: 90%;
-  max-width: 900px;
-  height: 85vh;
+  width: 95%;
+  max-width: 1200px;
+  height: 90vh;
   display: flex;
   flex-direction: column;
   margin: 20px;
@@ -136,6 +176,51 @@ onUnmounted(() => {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+}
+
+.content-wrapper {
+  display: flex;
+  height: 100%;
+  gap: 20px;
+}
+
+.outline {
+  width: 240px;
+  flex-shrink: 0;
+  padding-right: 16px;
+  overflow-y: auto;
+}
+
+.outline-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  color: #374151;
+}
+
+.outline-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.outline-item {
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #374151;
+  transition: color 0.2s;
+}
+
+.outline-item:hover {
+  color: #2563eb;
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  min-width: 0;
 }
 
 :global(.md-editor-preview-wrapper) {
@@ -186,5 +271,22 @@ onUnmounted(() => {
 :global(.dark .md-editor-preview ul),
 :global(.dark .md-editor-preview ol) {
   color: #e5e7eb;
+}
+
+:global(.dark .outline) {
+  border-right-color: transparent;
+}
+
+:global(.dark .outline-title) {
+  color: #e5e7eb;
+  border-bottom: none;
+}
+
+:global(.dark .outline-item) {
+  color: #e5e7eb;
+}
+
+:global(.dark .outline-item:hover) {
+  color: #60a5fa;
 }
 </style>
