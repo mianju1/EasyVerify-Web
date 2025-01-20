@@ -13,7 +13,7 @@
 			</div>
 			<div class="info-item">
 				<label>用户名:</label>
-				<span id="username">{{ initialUsername }}</span>
+				<span id="username">{{ username }}</span>
 			</div>
 		</div>
 
@@ -117,6 +117,8 @@ const isCountingDown = ref(false)
 const passwordCodeCountdown = ref(60)
 const isPasswordCodeCountingDown = ref(false)
 
+
+
 // 方法
 const getInfo = async () => {
 	try{
@@ -142,6 +144,12 @@ const getInfo = async () => {
 			content: error.response?.data?.message || '获取用户信息失败,请检查网络'
 		})
 	}
+}
+
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
 }
 
 const handleChangePassword = () => {
@@ -178,7 +186,6 @@ const handleChangePassword = () => {
 	// 所有验证通过后，才显示确认对话框
 	showPasswordModal.value = true
 }
-
 
 const handleSaveChanges = () => {
 	// 验证邮箱设置表单
@@ -328,20 +335,9 @@ const handleGetVerifyCode = async (type) => {
 	}, 1000)
 }
 
-// 接收props并设置username的值
-const props = defineProps({
-	initialUsername: {
-		type: String,
-		default: ''
-	}
-})
-
-// 监听 props.initialUsername 的变化并更新 username
-watch(() => props.initialUsername, (newVal) => {
-	username.value = newVal
-}, { immediate: true })
 
 onMounted(() => {
+	username.value = getCookie('username')
 	getInfo()
 })
 </script>

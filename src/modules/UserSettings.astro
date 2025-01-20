@@ -1,9 +1,6 @@
 ---
 /* eslint max-lines: 'off' */
-import UserSettings from '../vue/components/UserSettings.vue';
-
-
-const username = Astro.cookies.get('username')?.value;
+import UserSetting from '../vue/components/UserSetting.vue';
 ---
 
-<UserSettings client:load initialUsername={username} />
+<UserSetting client:load />

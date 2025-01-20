@@ -169,6 +169,9 @@ const pageSize = ref(20)
 const softwareList = ref([])
 const selectedSoftware = ref(null)
 
+// 添加新的响应式变量
+const encryptionList = ref([])
+
 // 然后再定义 headerProps
 const headerProps = {
   title: "API接口",
@@ -266,7 +269,7 @@ const batchEditFields = [
   }
 ]
 
-// 新增表单字段定义
+// 修改新增表单字段定义
 const addFormFields = [
   {
     key: 'function',
@@ -283,10 +286,7 @@ const addFormFields = [
     label: '加密方式',
     type: 'select',
     required: true,
-    options: Object.entries(encryptionTypeMapping).map(([value, label]) => ({
-      value,
-      label
-    }))
+    options: [] // 将在获取数据后动态设置
   }
 ]
 
@@ -598,9 +598,54 @@ const cancelBatchDelete = () => {
   showBatchDeleteModal.value = false
 }
 
-// 处理添加按钮点击
-const handleAddClick = () => {
-  showAddModal.value = true
+// 获取加密算法列表
+const fetchEncryptionList = async () => {
+  try {
+    const response = await api({
+      method: 'get',
+      params: {
+        sid: selectedSoftware.value
+      },
+      url: '/api/encrypt/get-has-encryption'
+    })
+
+    if (response.data.code === 200) {
+      // 根据返回的数据和encryptionTypeMapping创建加密方式选项
+      const encryptionOptions = response.data.data.map(value => ({
+        value: String(value),
+        label: encryptionTypeMapping[value]
+      }))
+      
+      // 更新新增表单中的加密方式选项
+      addFormFields[1].options = encryptionOptions
+    } else {
+      message.value.show({
+        type: 'error',
+        content: response.data.message || '获取加密算法列表失败'
+      })
+    }
+  } catch (err) {
+    message.value.show({
+      type: 'error',
+      content: err.response?.data?.message || '获取加密算法列表失败'
+    })
+  }
+}
+
+// 修改处理添加按钮点击
+const handleAddClick = async () => {
+  try {
+    loading.value = true
+    await fetchEncryptionList()
+    showAddModal.value = true
+  } catch (err) {
+    message.value.show({
+      type: 'error',
+      content: '打开新增窗口失败'
+    })
+  } finally {
+    loading.value = false
+  }
 }
 
 // 添加新增表单字段定义
