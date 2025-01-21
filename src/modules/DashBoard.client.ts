@@ -6,11 +6,13 @@ import api from '../lib/axios';
 // 生成最近7天的日期
 const getLast7Days = () => {
 	const dates = [];
-	for (let i = 6; i >= 0; i--) {
+	for (let i = 5; i >= -1; i--) {
 		const date = new Date();
 		date.setDate(date.getDate() - i);
 		dates.push(date.toISOString().split('T')[0]); // 格式: YYYY-MM-DD
 	}
+	console.log(dates);
+	
 	return dates;
 };
 
@@ -111,6 +113,7 @@ const getMainChartOptions = async () => {
 			date.setDate(date.getDate() - i);
 			dates.push(date.toISOString().split('T')[0]); // 格式: YYYY-MM-DD
 		}
+	
 		return dates;
 	};
 
