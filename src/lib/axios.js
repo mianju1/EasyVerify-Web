@@ -3,7 +3,8 @@ import axios from 'axios';
 // 创建 axios 实例
 const instance = axios.create({
 	// baseURL: 'http://localhost:8080', // 设置基础URL
-	baseURL: 'https://api.easyverify.mian-ju.cn', // 设置基础URL
+	// baseURL: 'https://api.easyverify.mian-ju.cn', // 设置基础URL
+	baseURL: import.meta.env.PUBLIC_API_URL, // 设置基础URL
 	timeout: 7000, // 设置超时时间
 	headers: {
 		'Content-Type': 'application/json'
@@ -13,7 +14,7 @@ const instance = axios.create({
 // 请求拦截器
 instance.interceptors.request.use(
 	(config) => {
-
+		
 		try {
 			let token = '';
 
