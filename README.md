@@ -1,297 +1,178 @@
-# [Flowbite Astro Admin Dashboard](https://themesberg.github.io/flowbite-astro-admin-dashboard/) [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social&logo=twitter)](https://twitter.com/intent/tweet?url=https%3A%2F%2Fgithub.com%2Fthemesberg%2Fflowbite-astro-admin-dashboard&text=Check%20out%20this%20open-source%20admin%20dashboard%20built%20with%20Flowbite%2C%20Astro%20and%20Tailwind%20CSS)
+# 伊泽网络验证管理系统 (EasyVerify-Backend)
 
-<!-- NOTE: This is a Tailwind in MD experiment, to make it nice when rendered with Astro -->
-<div align="center" class="flex flex-wrap justify-evenly w-full">
-	<a href="https://github.com/themesberg/flowbite-astro-admin-dashboard"><img src="https://img.shields.io/badge/version-v1.0.2-blue" alt="version"></a>
-	<a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license"></a>
-	<a href="https://github.com/themesberg/flowbite-admin-dashboard/issues?q=is%3Aopen+is%3Aissue"><img src="https://img.shields.io/github/issues/themesberg/flowbite-astro-admin-dashboard.svg" alt="GitHub issues open"></a>
-	<a href="https://github.com/themesberg/flowbite-admin-dashboard/issues?q=is%3Aissue+is%3Aclosed"><img src="https://img.shields.io/github/issues-closed-raw/themesberg/flowbite-astro-admin-dashboard.svg" alt="GitHub issues closed"></a>
-</div>
+![License](https://img.shields.io/badge/License-MIT-blue.svg)![GitHub Repo stars](https://img.shields.io/github/stars/mianju1/EasyVerify-Backend?style=social)
 
-<a class="hidden" href="https://themesberg.github.io/flowbite-astro-admin-dashboard/"><img class="w-full rounded-md overflow-hidden" src="https://flowbite.s3.amazonaws.com/templates/flowbite-admin-dashboard/flowbite-admin-dashboard-preview.png" alt="Flowbite Admin Dashboard Live Preview"></a>
 
-This project is a free and open-source UI admin dashboard template built with the components from [Flowbite](https://github.com/themesberg/flowbite) and based on the utility-first [Tailwind CSS](https://github.com/tailwindlabs/tailwindcss) framework featuring charts, tables, widgets, CRUD layouts, modals, drawers, and more.
 
-This admin dashboard can quickly help you get started building an application for your project using the newest UI/UX development technologies in the open-source area including Tailwind CSS and Flowbite.
+## 介绍
 
----
+伊泽网络验证管理系统是一个为开发者设计的后端系统，旨在通过HTTP协议提供账号、注册码、激活码验证等功能。开发者可以通过API轻松集成验证功能，并管理软件的相关信息及用户控制。
 
-<div align="center" class="flex flex-wrap justify-evenly w-full my-16">
-	<a href="https://stackblitz.com/github/themesberg/flowbite-astro-admin-dashboard"><img src="https://developer.stackblitz.com/img/open_in_stackblitz.svg" alt="Open in StackBlitz"></a>
-	<a href="https://codesandbox.io/p/github/themesberg/flowbite-astro-admin-dashboard/main"><img src="https://assets.codesandbox.io/github/button-edit-lime.svg" alt="Open with CodeSandbox"></a>
-</div>
+**完整使用请配合 [EasyVerify-Web](https://github.com/mianju1/EasyVerify-Web/) 项目使用**
 
-<div class="hidden">
+在线地址: [https://easyverify.mian-ju.cn](https://easyverify.mian-ju.cn)
 
----
+可以直接使用该项目搭建自己的验证管理系统，也可以基于此项目进行二次开发。
 
-## Table of Contents
+## 主要功能
 
-<details><summary>Click to expand</summary>
+- **账号验证**：验证用户账号的有效性。
+- **注册码验证**：验证用户提供的注册码是否有效。
+- **激活码验证**：验证用户提供的激活码是否有效。
+- **软件信息管理**：开发者可以管理创建的软件相关信息。
+- **用户控制**：提供对使用用户的管理功能。
+- **流量控制**：可根据系统配置对请求IP进行限流，防止恶意请求。
+- **机器验证**：根据提交信息对用户机器码进行验证管理。
+- **数据安全**：传输数据可选用`RSA2048`进行传输加密，保证数据传输安全。
 
-- [Table of Contents](#table-of-contents)
-- [🕹 Demo pages](#-demo-pages)
-- [🌀 Built with Flowbite](#-built-with-flowbite)
-- [💨 Tailwind CSS utility classes](#-tailwind-css-utility-classes)
-- [📊 15 example pages](#-15-example-pages)
-- [🧱 Advanced components](#-advanced-components)
-- [📚 Flowbite documentation](#-flowbite-documentation)
-- [👨‍🚀 Development](#-development)
-  - [⚙️ Workflow](#️-workflow)
-  - [🚀 Quick start](#-quick-start)
-  - [Project Structure](#project-structure)
-  - [🛠 Tools](#-tools)
-- [Browser Support](#browser-support)
-- [Resources](#resources)
-  - [JavaScript Frameworks](#javascript-frameworks)
-  - [Back-end Frameworks](#back-end-frameworks)
-- [Reporting Issues](#reporting-issues)
-- [Technical Support or Questions](#technical-support-or-questions)
-- [Licensing](#licensing)
-- [Useful Links](#useful-links)
-- [Authors](#authors)
 
-</details>
+## 安装与运行
 
----
+### 前提条件
 
-</div>
+- Docker
+- Docker Compose
 
-<div class="hidden">
 
-## 🕹 Demo pages
 
-| Dashboard                                                                                                                                                             | Stacked Layout                                                                                                                                                                            | Products (CRUD)                                                                                                                                                                                |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [![Dashboard](https://flowbite.s3.amazonaws.com/templates/flowbite-admin-dashboard/github/homepage.jpg)](http://themesberg.github.io/flowbite-astro-admin-dashboard/) | [![Stacked Layout](https://flowbite.s3.amazonaws.com/templates/flowbite-admin-dashboard/github/stacked.jpg)](http://themesberg.github.io/flowbite-astro-admin-dashboard/layouts/stacked/) | [![Products (CRUD)](https://flowbite.s3.amazonaws.com/templates/flowbite-admin-dashboard/github/products-crud.jpg)](http://themesberg.github.io/flowbite-astro-admin-dashboard/crud/products/) |
+### 安装步骤
 
-| Users (CRUD)                                                                                                                                                                     | Settings                                                                                                                                                                      | Pricing page                                                                                                                                                                          |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [![Users (CRUD)](https://flowbite.s3.amazonaws.com/templates/flowbite-admin-dashboard/github/users.jpg)](http://themesberg.github.io/flowbite-astro-admin-dashboard/crud/users/) | [![Settings](https://flowbite.s3.amazonaws.com/templates/flowbite-admin-dashboard/github/settings.jpg)](http://themesberg.github.io/flowbite-astro-admin-dashboard/settings/) | [![Pricing page](https://flowbite.s3.amazonaws.com/templates/flowbite-admin-dashboard/github/pricing.jpg)](http://themesberg.github.io/flowbite-astro-admin-dashboard/pages/pricing/) |
+**使用 docker-compose 进行安装**
 
-| Login page                                                                                                                                                                                 | Register page                                                                                                                                                                                    | Reset password                                                                                                                                                                                                 |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [![Login page](https://flowbite.s3.amazonaws.com/templates/flowbite-admin-dashboard/github/login.jpg)](http://themesberg.github.io/flowbite-astro-admin-dashboard/authentication/sign-in/) | [![Register page](https://flowbite.s3.amazonaws.com/templates/flowbite-admin-dashboard/github/register.jpg)](http://themesberg.github.io/flowbite-astro-admin-dashboard/authentication/sign-up/) | [![Reset password](https://flowbite.s3.amazonaws.com/templates/flowbite-admin-dashboard/github/reset-password.jpg)](http://themesberg.github.io/flowbite-astro-admin-dashboard/authentication/reset-password/) |
+```yaml
+services:
+  easyverify-backend:
+    image: ibm-semeru-runtimes:open-17.0.13_11-jre
+    container_name: easyverify-backend
+    working_dir: /app
+    logging:
+      driver: "json-file"  # 使用 json-file 日志驱动
+      options:
+        max-size: "100m"    # 单个日志文件最大 10MB
+        max-file: "5"      # 最多保留 3 个日志文件
+    environment:
+      - PORT=10086 # 端口号
+      # ... 按照下面配置要求填写环境变量
+      
+    ports:
+      - "10086:10086" # API项目映射端口
+    restart: always
+    volumes:
+      - xxx:/app/easyverify.jar # xxx为打包好的jar包路径
+    entrypoint: ["java", "-jar", "easyverify.jar"]
 
-| Forgot password                                                                                                                                                                                                   | Profile lock                                                                                                                                                                                             | Maintenance page                                                                                                                                                                                  |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [![Forgot password](https://flowbite.s3.amazonaws.com/templates/flowbite-admin-dashboard/github/forgot-password.jpg)](http://themesberg.github.io/flowbite-astro-admin-dashboard/authentication/forgot-password/) | [![Profile lock](https://flowbite.s3.amazonaws.com/templates/flowbite-admin-dashboard/github/profile-lock.jpg)](http://themesberg.github.io/flowbite-astro-admin-dashboard/authentication/profile-lock/) | [![Maintenance page](https://flowbite.s3.amazonaws.com/templates/flowbite-admin-dashboard/github/maintenance.jpg)](http://themesberg.github.io/flowbite-astro-admin-dashboard/pages/maintenance/) |
-
-| 404 not found                                                                                                                                                                  | 500 server error                                                                                                                                                                  | Playground                                                                                                                                                                                  |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [![404 not found](https://flowbite.s3.amazonaws.com/templates/flowbite-admin-dashboard/github/404.jpg)](http://themesberg.github.io/flowbite-astro-admin-dashboard/pages/404/) | [![500 server error](https://flowbite.s3.amazonaws.com/templates/flowbite-admin-dashboard/github/500.jpg)](http://themesberg.github.io/flowbite-astro-admin-dashboard/pages/500/) | [![Playground](https://flowbite.s3.amazonaws.com/templates/flowbite-admin-dashboard/github/playground.jpg)](http://themesberg.github.io/flowbite-astro-admin-dashboard/playground/sidebar/) |
-
-- [Live Preview](http://themesberg.github.io/flowbite-astro-admin-dashboard/)
-</div>
-
-## 🌀 Built with Flowbite
-
-The interactive components such as the navbars, modals, drawers, and tooltips are all based on the popular [open-source component library called Flowbite](https://flowbite.com/) which enables us to use these elements by creating more complex set of pages and widgets inside a fully-fledged admin dashboard template.
-
-## 💨 Tailwind CSS utility classes
-
-All of the pages, widgets, and components are solely based on the utility-first classes from Tailwind CSS and it is compatible with the latest `v3.x` of the technology by automatically purging all of the classes based on the template paths.
-
-## 📊 15 example pages
-
-Get started with 15 advanced examples pages including two different layouts of a dashboard's homepage full of charts widgets, tables, datepickers, and statistics and also with two CRUD layout pages for products, users, a settings page, authentication pages for login and register and even custom 404 and 500 error pages.
-
-## 🧱 Advanced components
-
-This admin dashboard contains many advanced components both from Flowbite but also from other third-party libraries such as ApexCharts which have been customly tailored with Tailwind CSS classes and designed based on the [Flowbite Design System](https://flowbite.com/figma/).
-
-## 📚 Flowbite documentation
-
-If you want to use this project we recommend to also [study the component library](https://flowbite.com/docs/getting-started/introduction/) that we used to build this dashboard because you can use even more components from that library to enhance the examples that we've coded here already.
-
-## 👨‍🚀 Development
-
-### ⚙️ Workflow
-
-This product is built using the following widely used technologies:
-
-- Tailwind CSS: [tailwindcss.com](https://tailwindcss.com/)
-- Flowbite: [flowbite.com](http://flowbite.com/)
-- Astro: [astro.build](https://astro.build/)
-
-### 🚀 Quick start
-
-1. Clone this repository or download the ZIP file
-2. Make sure that you have **Node.js** and NPM, PNPM or Yarn installed
-3. Install the project dependencies from the `package.json` file:
-
-```sh
-pnpm install
-# or
-npm install
-# or
-yarn
+# 请配合 Easyverify-web 项目进行使用
+  easyverify-web:
+    image: node:22.13.0
+    container_name: easyverify-web
+    working_dir: /app
+    environment:
+      - NODE_ENV=production
+      # ... 按照下面配置要求填写环境变量
+    ports:
+      - "2121:2121" # 前端项目映射端口
+    volumes:
+      - xxx:/app # xxx为前端项目路径
+    restart: always
+    command: >
+      sh -c "npm config set registry https://registry.npmmirror.com && npm install && npm run build && npm run preview"
+    depends_on:
+      - easyverify-backend
 ```
 
-_PNPM is the package manager of choice for illustration, but you can use what you want._
 
-1. Launch the Astro local development server on `localhost:2121` by running the following command:
 
-```sh
-pnpm run dev
+#### 环境变量配置
+
+以下环境变量需要在运行项目前配置，以确保系统正常运行：
+
+**EasyVerify-Backend:**
+```bash
+# 服务端口号
+- PORT=10086
+
+# 邮件服务配置
+- MAIL_HOST=your_mail_host          # 邮件服务器地址（例如：smtp.163.com）
+- MAIL_USERNAME=your_mail_username  # 邮件账号
+- MAIL_PASSWORD=your_mail_password  # 邮件账号密码或授权码
+
+# RabbitMQ 消息队列配置
+- RABBITMQ_HOST=your_rabbitmq_host     # RabbitMQ 服务器地址
+- RABBITMQ_PORT=your_rabbitmq_port     # RabbitMQ 端口
+- RABBITMQ_USERNAME=your_rabbitmq_username # RabbitMQ 用户名
+- RABBITMQ_PASSWORD=your_rabbitmq_password # RabbitMQ 密码
+
+# Redis 配置
+- REDIS_HOST=your_redis_host        # Redis 服务器地址
+- REDIS_PORT=your_redis_port        # Redis 端口
+- REDIS_PASSWORD=your_redis_password # Redis 密码
+
+# 数据库配置
+- DB_HOST=your_db_host              # 数据库服务器地址
+- DB_PORT=your_db_port              # 数据库端口
+- DB_NAME=your_db_name              # 数据库名称
+- DB_USER=your_db_user              # 数据库用户名
+- DB_PASSWORD=your_db_password      # 数据库密码
+
+# JWT 鉴权配置
+- JWT_KEY=your_jwt_key              # JWT 密钥（建议使用高强度随机字符串）
+- JWT_EXPIRE=your_jwt_expire        # JWT 过期时间（单位：小时）
+
+# 邮件发送频率限制
+- MAIL_LIMIT=your_mail_limit        # 邮件发送频率限制（单位：秒）
+
+# 流量限制配置
+- FLOW_LIMIT_TIME=your_flow_limit_time      # 流量限制时间窗口（单位：秒）
+- FLOW_LIMIT_COUNT=your_flow_limit_count    # 流量限制请求次数
+- FLOW_LIMIT_PERIOD=your_flow_limit_period  # 流量限制周期（单位：秒）
+
+# 时区配置
+- TZ=your_timezone                  # 系统时区（例如：Asia/Shanghai）
 ```
 
-You can also build the project and get the distribution files inside the `dist/` folder by running:
+**EasyVerify-Web:**
+```bash
+# 后端接口地址配置
+- PUBLIC_API_URL=http://localhost:10086  # 后端接口地址 注意最后不要带 /
+- PUBLIC_WEB_PORT=2121  # web端口号
 
-```sh
-pnpm run build
+# 时区配置
+- TZ=your_timezone                  # 系统时区（例如：Asia/Shanghai）
 ```
 
-Then, you can preview the generated build with a local web server:
+#### 配置说明
 
-```sh
-pnpm run preview
+1. **邮件服务**：确保 `MAIL_PASSWORD` 是有效的授权码，而不是邮箱的登录密码。
+2. **RabbitMQ**：确保 RabbitMQ 服务已启动，并且配置的用户名和密码正确。
+3. **Redis**：确保 Redis 服务已启动，并且配置的密码正确。
+4. **数据库**：确保数据库服务已启动，并且配置的用户名和密码正确。
+5. **JWT**：`JWT_KEY` 是用于生成和验证 Token 的密钥，请妥善保管。
+6. **流量限制**：根据实际需求调整流量限制参数，防止恶意请求。
+7. **时区**：`TZ` 设置为系统时区，确保系统时间与本地时间一致。
+
+
+
+#### 启动项目：
+
+```shell
+docker-compose up -d
 ```
 
-For deployment, see the GitHub workflow, where you can plug your target (pre-configured for GitHub pages).
-See [docs.astro.build/en/guides/deploy](https://docs.astro.build/en/guides/deploy)
 
-Website is configured for static deployment, but you can flip it to **Server-Side rendering** by simply
-uncommenting `output: "server"` in the `./astro.config.mjs`.
 
----
+1. 服务启动后，后端项目 将默认运行在 `http://localhost:10086`（具体端口请参考 `docker-compose.yml` 配置 `Easyverify-backend` 中）。
+2. 前端项目默认运行在`http://localhost:2121`（具体端口请参考 `docker-compose.yml` 配置 `Easyverify-web` 中）。
 
-### Project Structure
 
-After cloning this repository, you'll find the following (simplified) structure:
 
-```sh
-🛬
-├── 💧 data
-│   └── **/*.json                        # Satic data sources for REST etc.
-│
-└── src
-    │
-    ├── 🧱 app
-    │   └── **/*.astro                   # Application-wide components
-    │
-    ├── 🌠 assets
-    │   └── **/*.{svg,…}                 # Transformable assets
-    │
-    ├── 🧱 components
-    │   └── **/*.astro                   # Simple, atomic UI elements
-    │
-    ├── 📚 lib
-    │   └── **/*.ts                      # Utilities (Databases, APIs…)
-    │
-    ├── 🧱 modules
-    │   └── **/*.astro                   # Complex views made of elements
-    │
-    ├── 📑 pages
-    │   ├── **/*.astro                   # File-based client routes
-    │   │
-    │   └── 🌐 api
-    │        └── [...entities].ts        # Catch-all endpoint for CRUD ops.
-    │
-    ├── 🚀 services
-    │   └── *.ts                         # Server-side CRUD operations
-    │
-    └── 📐 types
-        └── *.ts                         # Data entities typings
+## 报告问题
 
-```
+如果你在使用过程中遇到任何问题，请在 [Issues](https://github.com/mianju1/EasyVerify-Backend/issues) 页面提交问题。
 
-### 🛠 Tools
 
-Efforts have been put on fast **onboarding** and **developer experience**.
 
-This project comes with extensive support for TypeScript, Astro, Tailwind, and VS Code.  
-It is configured with sensible defaults, a bit of opinions, plus some tricks to make it plays nice together.
+## 许可证
 
-- **TypeScript**: _strictest_ Astro's settings. Full-stack, type-safe code base
-- **ESLint**: featuring `astro-eslint-parser` + `eslint-plugin-astro`
-- **Prettier**: featuring `prettier-plugin-astro` (bundled with `astro`)
-- **Editorconfig**: conforming with prettier
-- **VS Code**: extensions recommendations, tooling settings
-- **Tailwind**: Astro integration (using Vite and PostCSS)
-- **Flowbite**: dependencies (core, typography), settings
-- **GitHub**: a [pre-configured workflow](https://github.com/themesberg/flowbite-astro-admin-dashboard/tree/main/.github/workflows) for deployment (using PNPM cache)
-- **Sandboxes**: project is tested against and fully compatible with web containers
+本项目采用 [MIT 许可证](https://github.com/mianju1/EasyVerify-Backend/blob/master/LICENSE)。
 
-Feel free to hack those settings to cater for your own needs.
 
-<div align="center">
-<a href="https://user-images.githubusercontent.com/603498/224380239-0aff9ec2-3436-4fca-a842-230f29dd9677.png"><img class="w-full rounded-md overflow-hidden" alt="ide-tooling" src="https://user-images.githubusercontent.com/603498/224380239-0aff9ec2-3436-4fca-a842-230f29dd9677.png"></a>
-<a href="https://user-images.githubusercontent.com/603498/224374764-dd1f98f8-df45-43c0-97f7-4b89ec427628.png"><img class="w-full rounded-md overflow-hidden" alt="gh-workflow" src="https://user-images.githubusercontent.com/603498/224374764-dd1f98f8-df45-43c0-97f7-4b89ec427628.png"></a>
-<a href="https://user-images.githubusercontent.com/603498/224353577-51262536-742a-4204-b85f-3f83c209697d.png"><img class="w-full rounded-md overflow-hidden" alt="gh-workflow" src="https://user-images.githubusercontent.com/603498/224353577-51262536-742a-4204-b85f-3f83c209697d.png"></a>
-</div>
-
-## Browser Support
-
-At present, we officially aim to support the last two versions of the following browsers:
-
-<div align="center" class="flex justify-between w-full">
-<img src="https://s3.amazonaws.com/creativetim_bucket/github/browser/chrome.png" width="64" height="64"> <img src="https://s3.amazonaws.com/creativetim_bucket/github/browser/firefox.png" width="64" height="64"> <img src="https://s3.amazonaws.com/creativetim_bucket/github/browser/edge.png" width="64" height="64"> <img src="https://s3.amazonaws.com/creativetim_bucket/github/browser/safari.png" width="64" height="64"> <img src="https://s3.amazonaws.com/creativetim_bucket/github/browser/opera.png" width="64" height="64">
-</div>
-
-## Resources
-
-- Live preview: <https://themesberg.github.io/flowbite-astro-admin-dashboard/>
-
-- Flowbite documentation: <https://flowbite.com/docs/getting-started/introduction/>
-- Tailwind CSS documentation: <https://tailwindcss.com/>
-- License Agreement: <https://flowbite.com/docs/getting-started/license/>
-- Issues: [Github Issues Page](https://github.com/themesberg/flowbite-admin-dashboard/issues)
-
-### JavaScript Frameworks
-
-Here's a list of compatible technologies and guides for Flowbite and Tailwind CSS:
-
-The awesome open-source community also built and currently maintains the following standalone libraries for React, Vue, Svelte, and Angular:
-
-- [🌀 Flowbite React Library](https://github.com/themesberg/flowbite-react)
-- [🍀 Flowbite Vue Library](https://github.com/themesberg/flowbite-vue)
-- [🎸 Flowbite Svelte Library](https://github.com/themesberg/flowbite-svelte)
-- [📕 Flowbite Angular Library](https://github.com/themesberg/flowbite-angular)
-
-We also wrote integration guides for the following front-end frameworks and libraries:
-
-- [📝 Flowbite with React guide](https://flowbite.com/docs/getting-started/react/)
-- [📝 Flowbite with Next.js guide](https://flowbite.com/docs/getting-started/next-js/)
-- [📝 Flowbite with Vue guide](https://flowbite.com/docs/getting-started/vue/)
-- [📝 Flowbite with Nuxt.js guide](https://flowbite.com/docs/getting-started/nuxt-js/)
-- [📝 Flowbite with Svelte guide](https://flowbite.com/docs/getting-started/svelte/)
-
-### Back-end Frameworks
-
-Flowbite has a great integration with most of the back-end frameworks because it relies on vanilla JavaScript:
-
-- [📚 Using Flowbite with Laravel](https://flowbite.com/docs/getting-started/laravel/)
-- [🚊 Using Flowbite with Ruby on Rails 7](https://flowbite.com/docs/getting-started/rails/)
-- [🐸 Using Flowbite with Django](https://flowbite.com/docs/getting-started/django/)
-- [🌶 Using Flowbite with Flask](https://flowbite.com/docs/getting-started/flask/)
-
-## Reporting Issues
-
-We use GitHub Issues as the official bug tracker for Flowbite Admin Dashboard. Here are some advices for our users that want to report an issue:
-
-1. Make sure that you are using the latest version of Flowbite Admin Dashboard. Check the CHANGELOG from your dashboard on the [GitHub releases page](https://github.com/themesberg/flowbite-admin-dashboard/releases).
-2. Providing us reproducible steps for the issue will shorten the time it takes for it to be fixed.
-3. Some issues may be browser specific, so specifying in what browser you encountered the issue might help.
-
-## Technical Support or Questions
-
-If you have questions or need help integrating the product please [contact us](https://flowbite.com/contact/) instead of opening an issue.
-
-## Licensing
-
-- Copyright 2019-2023 Bergside Inc. (https://flowbite.com)
-- Open-source under the [MIT License](https://github.com/themesberg/flowbite-admin-dashboard/blob/main/LICENSE)
-
-## Useful Links
-
-- 📚 [Flowbite Library](https://flowbite.com/) - Open-source components built with Tailwind CSS
-- 🎨 [Flowbite Figma](https://flowbite.com/figma/) - Design system built for Figma
-- 🧱 [Flowbite Blocks](https://flowbite.com/blocks/) - Building sections for website and applications
-- 💎 [Flowbite Pro](https://flowbite.com/pro/) - A larger collection of the open-source version of the latter three
-
-## Authors
-
-- [Julian Cataldo](https://twitter.com/Julian_Cataldo)
-- [Zoltán Szőgyényi](https://twitter.com/zoltanszogyenyi)
-- [Robert Tanislav](https://twitter.com/roberttanislav)
