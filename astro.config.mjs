@@ -4,7 +4,7 @@ import tailwind from '@astrojs/tailwind';
 import vue from "@astrojs/vue";
 import node from "@astrojs/node";  // 添加这行
 
-const DEV_PORT = 2121;
+const DEV_PORT = import.meta.env.PUBLIC_WEB_PORT;
 
 
 // https://astro.build/config
