@@ -2,9 +2,11 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import tailwind from '@astrojs/tailwind';
 import vue from "@astrojs/vue";
-import node from "@astrojs/node";  // 添加这行
+import node from "@astrojs/node";
+import { loadEnv } from "vite";
 
-const DEV_PORT = import.meta.env.PUBLIC_WEB_PORT;
+const env = loadEnv(process.env.NODE_ENV, process.cwd(), '');
+const DEV_PORT = parseInt(env.PUBLIC_WEB_PORT,10);
 
 
 // https://astro.build/config
