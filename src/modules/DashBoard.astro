@@ -19,8 +19,6 @@ import DocViewer from '../components/DocViewer.vue';
         <div id="main-chart"></div>
     </div>
 
-	</div>
-
     <!--Tabs widget -->
     <div
         class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800"
@@ -32,22 +30,34 @@ import DocViewer from '../components/DocViewer.vue';
                 >接入教程</span>
             </div>
         </div>
-
-								<!-- other SDK -->
-                <div class="guide-section">
-									<h3 class="guide-title">接口文档</h3>
-									<div class="upload-container">
-											<button 
-													class="upload-btn" 
-													data-doc-path="/docs/other-sdk.md"
-													data-doc-title="其他 SDK 接入"
-													aria-label="查看其他文档"
-											>
-													查看文档
-											</button>
-									</div>
-							</div>
-								
+        <div class="guide-container">
+            <!-- other SDK -->
+            <div class="guide-section">
+                <h3 class="guide-title">接口文档</h3>
+                <div class="upload-container">
+                    <button 
+                        class="upload-btn" 
+                        data-doc-path="/docs/other-sdk.md"
+                        data-doc-title="其他 SDK 接入"
+                        aria-label="查看其他文档"
+                    >
+                        查看文档
+                    </button>
+                </div>
+            </div>
+            <!-- encrypt SDK -->
+            <div class="guide-section">
+                <h3 class="guide-title">高级功能</h3>
+                <div class="upload-container">
+                    <button 
+                        class="upload-btn" 
+                        data-doc-path="/docs/encrypt.md"
+                        data-doc-title="高级功能"
+                        aria-label="查看其他文档"
+                    >
+                        查看文档
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -56,7 +66,7 @@ import DocViewer from '../components/DocViewer.vue';
 </div>
 
 <script>
-    import './DashBoard.client.js';
+    import './DashBoard.client.ts';
 </script>
 
 <style is:global>
@@ -101,12 +111,20 @@ import DocViewer from '../components/DocViewer.vue';
     gap: 24px;
 }
 
+/* 指南容器样式 - 左右布局 */
+.guide-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+}
+
 /* 每个语言区块的样式 */
 .guide-section {
     background-color: #fff;
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    flex: 1;
 }
 
 .guide-title {
