@@ -35,52 +35,88 @@
 </div>
 
 <script>
-	const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
-	const themeToggleLightIcon = document.getElementById(
-		'theme-toggle-light-icon',
-	);
+	// 确保DOM完全加载后再执行脚本
+	document.addEventListener('DOMContentLoaded', () => {
+		// 获取主题切换相关元素
+		const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+		const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+		const themeToggleBtn = document.getElementById('theme-toggle');
+		const tooltip = document.getElementById('tooltip-toggle');
 
-	// Change the icons inside the button based on previous settings
-	if (
-		localStorage.getItem('color-theme') === 'dark' ||
-		(!('color-theme' in localStorage) &&
-			window.matchMedia('(prefers-color-scheme: dark)').matches)
-	) {
-		themeToggleLightIcon.classList.remove('hidden');
-	} else {
-		themeToggleDarkIcon.classList.remove('hidden');
-	}
-
-	const themeToggleBtn = document.getElementById('theme-toggle');
-
-	let event = new Event('dark-mode');
-
-	themeToggleBtn.addEventListener('click', function () {
-		// toggle icons
-		themeToggleDarkIcon.classList.toggle('hidden');
-		themeToggleLightIcon.classList.toggle('hidden');
-
-		// if set via local storage previously
-		if (localStorage.getItem('color-theme')) {
-			if (localStorage.getItem('color-theme') === 'light') {
-				document.documentElement.classList.add('dark');
-				localStorage.setItem('color-theme', 'dark');
-			} else {
-				document.documentElement.classList.remove('dark');
-				localStorage.setItem('color-theme', 'light');
-			}
-
-			// if NOT set via local storage previously
-		} else {
-			if (document.documentElement.classList.contains('dark')) {
-				document.documentElement.classList.remove('dark');
-				localStorage.setItem('color-theme', 'light');
-			} else {
-				document.documentElement.classList.add('dark');
-				localStorage.setItem('color-theme', 'dark');
-			}
+		// 检查元素是否存在
+		if (!themeToggleDarkIcon || !themeToggleLightIcon || !themeToggleBtn) {
+			console.error('主题切换元素未找到');
+			return;
 		}
 
-		document.dispatchEvent(event);
+		// 根据之前的设置更改按钮内的图标
+		if (
+			localStorage.getItem('color-theme') === 'dark' ||
+			(!('color-theme' in localStorage) &&
+				window.matchMedia('(prefers-color-scheme: dark)').matches)
+		) {
+			themeToggleLightIcon.classList.remove('hidden');
+		} else {
+			themeToggleDarkIcon.classList.remove('hidden');
+		}
+
+		// 创建暗黑模式切换事件
+		const event = new Event('dark-mode');
+
+		// 为主题切换按钮添加点击事件监听器
+		themeToggleBtn.addEventListener('click', () =>  {
+			// 切换图标显示
+			themeToggleDarkIcon.classList.toggle('hidden');
+			themeToggleLightIcon.classList.toggle('hidden');
+
+			// 如果之前通过本地存储设置过
+			if (localStorage.getItem('color-theme')) {
+				if (localStorage.getItem('color-theme') === 'light') {
+					document.documentElement.classList.add('dark');
+					localStorage.setItem('color-theme', 'dark');
+				} else {
+					document.documentElement.classList.remove('dark');
+					localStorage.setItem('color-theme', 'light');
+				}
+
+				// 如果之前未通过本地存储设置
+			} else {
+const isDarkMode = document.documentElement.classList.contains('dark');
+if (isDarkMode) {
+					document.documentElement.classList.remove('dark');
+					localStorage.setItem('color-theme', 'light');
+				} else {
+					document.documentElement.classList.add('dark');
+					localStorage.setItem('color-theme', 'dark');
+				}
+			}
+
+			// 触发暗黑模式事件
+			document.dispatchEvent(event);
+		});
+
+		// 确保Flowbite的tooltip正常工作
+		// 如果Flowbite已经加载，它会自动处理带有data-tooltip-target属性的元素
+		// 但为了确保tooltip正常工作，我们可以手动检查
+		if (tooltip && typeof (window as any).Flowbite !== 'undefined') {
+			// Flowbite已加载，tooltip应该正常工作
+			console.log('Flowbite已加载，tooltip应该正常工作');
+		} else if (tooltip) {
+			// 如果Flowbite尚未加载，我们可以添加基本的tooltip功能
+			themeToggleBtn.addEventListener('mouseenter', () =>  {
+				tooltip.classList.remove('invisible', 'opacity-0');
+				tooltip.classList.add('opacity-100');
+				
+				// 简单定位tooltip
+				const btnRect = themeToggleBtn.getBoundingClientRect();
+				tooltip.style.left = `${btnRect.left + (btnRect.width / 2) - (tooltip.offsetWidth / 2)}px`;
+				tooltip.style.top = `${btnRect.bottom + 10}px`;
+			});
+			
+			themeToggleBtn.addEventListener('mouseleave', () =>  {
+				tooltip.classList.add('invisible', 'opacity-0');
+				tooltip.classList.remove('opacity-100');
+			});
+		}
 	});
 </script>

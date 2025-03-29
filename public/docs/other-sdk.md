@@ -1,6 +1,25 @@
 ## 系统接口文档
 
+使用接口文档，您可以了解如何使用接口进行数据交互。
 
+**请先前往** [API接口](/web/interface) **中进行接口开放与设置**
+
+### 0. 准备工作 
+
+> 重要！！
+
+下列功能中的 `请求URL` 中会有 `"接口地址"`该内容，请将该内容替换为 [API接口](/web/interface) 中的 **接口地址**！！！
+
+如图所示：
+
+![image](https://image.baidu.com/search/down?url=https://tvax1.sinaimg.cn/large/006yj1INly1hzy7pspefxj336e14kdtk.jpg)
+
+> 请按照对应功能填入对应接口地址！
+
+例如：
+
+- 注册功能：https://api.easyverify.mian-ju.cn/api/v1/74362DE4D1D14969
+- 账号登陆功能：https://api.easyverify.mian-ju.cn/api/v1/076EE397D3C14088
 
 ### 1. 注册功能
 
@@ -11,7 +30,7 @@
 `POST`
 
 **请求URL**
-`/api/v1/接口地址`
+`https://api.easyverify.mian-ju.cn/api/v1/接口地址`
 
 **请求参数**
 
@@ -42,7 +61,7 @@
 `POST`
 
 **请求URL**
-`/api/v1/接口地址`
+`https://api.easyverify.mian-ju.cn/api/v1/接口地址`
 
 **请求参数**
 
@@ -70,7 +89,7 @@
 `POST`
 
 **请求URL**
-`/api/v1/接口地址`
+`https://api.easyverify.mian-ju.cn/api/v1/接口地址`
 
 **请求参数**
 
@@ -97,7 +116,7 @@
 `GET`
 
 **请求URL**
-`/api/v1/接口地址`
+`https://api.easyverify.mian-ju.cn/api/v1/接口地址`
 
 **请求参数**
 无
@@ -134,7 +153,7 @@
 `GET`
 
 **请求URL**
-`/api/v1/接口地址`
+`https://api.easyverify.mian-ju.cn/api/v1/接口地址`
 
 **请求参数**
 无
@@ -171,7 +190,7 @@
 `GET`
 
 **请求URL**
-`/api/v1/接口地址`
+`https://api.easyverify.mian-ju.cn/api/v1/接口地址`
 
 **请求参数**
 
@@ -207,7 +226,7 @@
 `POST`
 
 **请求URL**
-`/api/v1/接口地址`
+`https://api.easyverify.mian-ju.cn/api/v1/接口地址`
 
 **请求参数**
 
@@ -232,7 +251,7 @@
 `POST`
 
 **请求URL**
-`/api/v1/接口地址`
+`https://api.easyverify.mian-ju.cn/api/v1/接口地址`
 
 **请求参数**
 

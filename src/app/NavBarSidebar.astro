@@ -1,5 +1,6 @@
 ---
 
+import multiavatar from '@multiavatar/multiavatar';
 import { url } from '../lib/data.js';
 
 import ColorModeSwitcher from '../components/ColorModeSwitcher.astro';
@@ -8,7 +9,9 @@ import { GITHUB_REPO_URL, REPO_NAME } from './constants.js';
 
 import { uuid } from '../pages/api/http';
 
-const randomHeaderPic = `https://api.multiavatar.com/${uuid()}.png`;
+// const randomHeaderPic = `https://api.multiavatar.com/${uuid()}.png`;
+const randomHeaderPic = multiavatar(uuid());
+
 ---
 
 <nav
@@ -61,7 +64,8 @@ const randomHeaderPic = `https://api.multiavatar.com/${uuid()}.png`;
 
 			<div class="flex items-center">
 				<!-- 改为自己的仓库地址github -->
-				<GitHubButton repository={GITHUB_REPO_URL.split("github.com/")[1]} />
+				<GitHubButton repository={GITHUB_REPO_URL.split("github.com/")[1] || ''} />
+
 				
 				<!-- Search mobile -->
 				<button
@@ -97,11 +101,7 @@ const randomHeaderPic = `https://api.multiavatar.com/${uuid()}.png`;
 							data-dropdown-toggle="dropdown-2"
 						>
 							<span class="sr-only">Open user menu</span>
-							<img
-								class="w-8 h-8 rounded-full"
-								src={randomHeaderPic}
-								alt="user photo"
-							/>
+							<div class="w-8 h-8 rounded-full overflow-hidden" set:html={randomHeaderPic}></div>
 						</button>
 					</div>
 					<!-- Dropdown menu -->
@@ -152,10 +152,12 @@ import axios from '../lib/axios';
 const usernameElement = document.getElementById('username-display');
   if (usernameElement) {
     const username = localStorage.getItem('username') || usernameElement.dataset.usernameDefault;
-    usernameElement.textContent = '用户名：'+username;
+    usernameElement.textContent = `用户名：${username}`;
   }
 
-document.getElementById('logoutBtn').addEventListener('click', async function() {
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', async () => {
 	try {
 		const response = await axios.post('/api/auth/logout');
 		
@@ -176,4 +178,5 @@ document.getElementById('logoutBtn').addEventListener('click', async function() 
 	}
 });
 
+}
 </script>
