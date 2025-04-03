@@ -26,6 +26,7 @@
         :id-field="'username'"
         :selectable="true"
         :show-batch-edit="false"
+        :show-disable="true"
         @edit="handleEdit"
         @delete="handleDelete"
         @batch-delete="handleBatchDelete"
@@ -60,6 +61,24 @@
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-gray-100 text-gray-800">
               {{ value }}
             </span>
+          </div>
+        </template>
+
+        <!-- 自定义操作按钮 -->
+        <template #actions="{ item }">
+          <div class="flex space-x-2">
+            <button @click="handleEdit(item)" class="px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700">
+              编辑
+            </button>
+            <button @click="handleDelete(item)" class="px-2 py-1 text-xs font-medium text-white bg-red-600 rounded hover:bg-red-700">
+              删除
+            </button>
+            <button 
+              @click="handleDisable(item)" 
+              :class="[item.status === 0 ? 'bg-green-600 hover:bg-green-700' : 'bg-yellow-600 hover:bg-yellow-700', 'px-2 py-1 text-xs font-medium text-white rounded']"
+            >
+              {{ item.status === 0 ? '启用' : '禁用' }}
+            </button>
           </div>
         </template>
 
@@ -106,6 +125,16 @@
       level="error"
       @confirm="confirmBatchDelete"
       @cancel="cancelBatchDelete"
+    />
+
+    <!-- 禁用/启用用户确认框 -->
+    <ConfirmModal
+      v-model="showDisableModal"
+      :title="itemToDisable?.value?.status === -1 ? '禁用用户确认' : '启用用户确认'"
+      :message="itemToDisable?.value?.status === -1 ? '确定要禁用该用户吗？禁用后用户将无法登录。' : '确定要启用该用户吗？启用后用户将可以正常登录。'"
+      :level="itemToDisable?.value?.status === -1 ? 'warn' : 'info'"
+      @confirm="confirmDisable"
+      @cancel="cancelDisable"
     />
   </div>
   <Message ref="message" />
@@ -167,8 +196,10 @@ const showDeleteModal = ref(false)
 const showEditModal = ref(false)
 const showBatchEditModal = ref(false)
 const showBatchDeleteModal = ref(false)
+const showDisableModal = ref(false)
 const itemToEdit = ref(null)
 const itemToDelete = ref(null)
+const itemToDisable = ref(null)
 
 // 表头定义
 const headers = [
@@ -300,6 +331,7 @@ const fetchData = async (page = 1, pageSize = 20) => {
         username: item.username,
         expireTime: formatTime(item.expiredTime),
         lastLoginTime: formatTime(item.lastLoginTime),
+        status: item.status // 添加状态字段
       }))
       total.value = response.data.total || 0
       lastPage.value = Math.ceil(total.value / pageSize)
@@ -336,6 +368,15 @@ const handleEdit = (item) => {
 const handleDelete = (item) => {
   itemToDelete.value = item
   showDeleteModal.value = true
+}
+
+// 禁用处理
+const handleDisable = (item) => {
+  // 设置要禁用的项目
+  itemToDisable.value = {...item};
+  // 显示确认模态框
+  showDisableModal.value = true;
+  console.log('禁用处理:', itemToDisable.value); // 添加日志以便调试
 }
 
 // 批量删除处理
@@ -389,6 +430,55 @@ const confirmDelete = async () => {
 const cancelDelete = () => {
   showDeleteModal.value = false
   itemToDelete.value = null
+}
+
+// 确认禁用或启用用户
+const confirmDisable = async () => {
+  try {
+    loading.value = true
+    
+    // 根据当前状态决定要设置的新状态
+    // 如果当前是-1(启用状态)，则设为0(禁用状态)；如果当前是0(禁用状态)，则设为-1(启用状态)
+    const newStatus = itemToDisable.value.status === -1 ? 0 : -1
+    
+    const response = await api({
+      method: 'post',
+      data: {
+        sid: selectedSoftware.value,
+        username: itemToDisable.value.username,
+        status: newStatus
+      },
+      url: '/api/user/manager-user-status'
+    })
+
+    if (response.data.code === 200) {
+      message.value.show({
+        type: 'success',
+        content: newStatus === 0 ? '用户禁用成功' : '用户启用成功'
+      })
+      await fetchData(currentPage.value, pageSize.value)
+    } else {
+      message.value.show({
+        type: 'error',
+        content: response.data.message || (newStatus === 0 ? '禁用用户失败' : '启用用户失败')
+      })
+    }
+  } catch (err) {
+    message.value.show({
+      type: 'error', 
+      content: err.response?.data?.message || '操作失败'
+    })
+  } finally {
+    loading.value = false
+    showDisableModal.value = false
+    itemToDisable.value = null
+  }
+}
+
+// 取消禁用
+const cancelDisable = () => {
+  showDisableModal.value = false
+  itemToDisable.value = null
 }
 
 // 添加时间转换工具函数

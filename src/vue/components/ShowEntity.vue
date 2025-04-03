@@ -60,6 +60,19 @@
 								<td class="p-4 whitespace-nowrap text-right">
 									<slot name="row-actions" :item="item">
 										<div class="flex justify-end space-x-2">
+											<slot name="disable-button" :item="item">
+												<button v-if="showDisable" 
+														@click="$emit('disable', item)" 
+														:class="[
+															'inline-flex items-center px-3 py-1.5 text-sm font-medium text-white rounded-lg focus:ring-4',
+															item.status === 0 ? 'bg-green-600 hover:bg-green-700 focus:ring-green-300' : 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-300'
+														]">
+													<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+														<path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd" />
+													</svg>
+													{{ item.status === 0 ? '启用' : '禁用' }}
+												</button>
+											</slot>
 											<button v-if="showEdit" 
 													@click="$emit('edit', item)" 
 													class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300">
@@ -111,6 +124,10 @@ const props = defineProps({
 		type: Boolean,
 		default: true
 	},
+	showDisable: {
+		type: Boolean,
+		default: false
+	},
 	showBatchEdit: {
 		type: Boolean,
 		default: true
@@ -120,6 +137,7 @@ const props = defineProps({
 const emit = defineEmits([
 	'edit',
 	'delete',
+	'disable',
 	'batch-edit',
 	'batch-delete',
 	'selection-change'

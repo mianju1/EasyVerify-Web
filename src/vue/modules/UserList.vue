@@ -194,7 +194,7 @@ const headers = [
   '激活码',
   '用户名/机器码',
   '到期时间',
-  '用户状态'
+  '激活码状态'
 ]
 
 // 表头映射
@@ -203,10 +203,10 @@ const headerMapping = {
   '激活码': 'username',
   '用户名/机器码': 'machineCode',
   '到期时间': 'expireTime',
-  '用户状态': 'status'
+  '激活码状态': 'status'
 }
 
-// 添加用户状态映射
+// 添加激活码状态映射
 const userStatusMapping = {
   '-1': '正常',
   '0': '禁用'
@@ -223,7 +223,7 @@ const editFormFields = [
   },
   {
     key: 'status',
-    label: '用户状态',
+    label: '激活码状态',
     type: 'select',
     required: true,
     options: [
@@ -251,7 +251,7 @@ const editFormFields = [
 const batchEditFields = [
   {
     key: 'status',
-    label: '用户状态',
+    label: '激活码状态',
     type: 'select',
     required: true,
     options: Object.entries(userStatusMapping).map(([value, label]) => ({
