@@ -1,143 +1,117 @@
 <template>
-  <div class="entities-crud">
-    <div v-if="loading" class="flex justify-center items-center p-4">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-    </div>
+	<div class="entities-crud">
+		<div v-if="loading" class="flex justify-center items-center p-4">
+			<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+		</div>
 
-    <div v-else>
-      <ProductHeader
-        :title="headerProps.title"
-        :show-search="headerProps.showSearch"
-        :search-placeholder="headerProps.searchPlaceholder"
-        :show-software-select="headerProps.showSoftwareSelect"
-        :software-list="softwareList"
-        :selected-software="selectedSoftware"
-        :show-add-button="false"
-				v-model:searchValue="searchKeyword"
-        @update:selected-software="selectedSoftware = $event"
-        @software-change="handleSoftwareChange"
-        @search="handleSearch"
-      />
-      
-      <ShowEntity 
-        :headers="headers"
-        :dataList="dataList"
-        :headerMapping="headerMapping"
-        :id-field="'username'"
-        :selectable="true"
-        :show-batch-edit="false"
-        :show-disable="true"
-        @edit="handleEdit"
-        @delete="handleDelete"
-        @batch-delete="handleBatchDelete"
-        @selection-change="handleSelectionChange"
-      >
-        <!-- 自定义用户名列 -->
-        <template #username="{ value }">
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-purple-100 text-purple-800">
-            {{ value }}
-          </span>
-        </template>
+		<div v-else>
+			<ProductHeader :title="headerProps.title" :show-search="headerProps.showSearch"
+				:search-placeholder="headerProps.searchPlaceholder" :show-software-select="headerProps.showSoftwareSelect"
+				:software-list="softwareList" :selected-software="selectedSoftware" :show-add-button="false"
+				v-model:searchValue="searchKeyword" @update:selected-software="selectedSoftware = $event"
+				@software-change="handleSoftwareChange" @search="handleSearch" />
 
-        <!-- 自定义到期时间列 -->
-        <template #expireTime="{ value }">
-          <div class="flex items-center space-x-2">
-            <span :class="[
+			<ShowEntity :headers="headers" :dataList="dataList" :headerMapping="headerMapping" :id-field="'username'"
+				:selectable="true" :show-batch-edit="false" :show-disable="true" :show-batch-disable="true" :show-batch-enable="true" @edit="handleEdit" @delete="handleDelete"
+				@batch-delete="handleBatchDelete" @batch-disable="handleBatchDisable" @batch-enable="handleBatchEnable" @selection-change="handleSelectionChange" @disable="handleDisable">
+				<!-- 自定义用户名列 -->
+				<template #username="{ value }">
+					<span
+						class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-purple-100 text-purple-800">
+						{{ value }}
+					</span>
+				</template>
+
+				<!-- 自定义到期时间列 -->
+				<template #expireTime="{ value }">
+					<div class="flex items-center space-x-2">
+						<span :class="[
               'inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium',
               isExpired(value) ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
             ]">
-              {{ formatTime(value) }}
-            </span>
-            <span v-if="isExpired(value)"
-              class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-red-100 text-red-800">
-              已到期
-            </span>
-          </div>
-        </template>
+							{{ value }}
+						</span>
+						<span v-if="isExpired(value)"
+							class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-red-100 text-red-800">
+							已到期
+						</span>
+					</div>
+				</template>
 
-        <!-- 自定义最近登录时间列 -->
-        <template #lastLoginTime="{ value }">
-          <div class="flex items-center">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-gray-100 text-gray-800">
-              {{ value }}
-            </span>
-          </div>
-        </template>
+				<!-- 自定义最近登录时间列 -->
+				<template #lastLoginTime="{ value }">
+					<div class="flex items-center">
+						<span
+							class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-gray-100 text-gray-800">
+							{{ value }}
+						</span>
+					</div>
+				</template>
 
-        <!-- 自定义操作按钮 -->
-        <template #actions="{ item }">
-          <div class="flex space-x-2">
-            <button @click="handleEdit(item)" class="px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700">
-              编辑
-            </button>
-            <button @click="handleDelete(item)" class="px-2 py-1 text-xs font-medium text-white bg-red-600 rounded hover:bg-red-700">
-              删除
-            </button>
-            <button 
-              @click="handleDisable(item)" 
-              :class="[item.status === 0 ? 'bg-green-600 hover:bg-green-700' : 'bg-yellow-600 hover:bg-yellow-700', 'px-2 py-1 text-xs font-medium text-white rounded']"
-            >
-              {{ item.status === 0 ? '启用' : '禁用' }}
-            </button>
-          </div>
-        </template>
+				<!-- 自定义操作按钮 -->
+				<template #actions="{ item }">
+					<div class="flex space-x-2">
+						<button @click="handleEdit(item)"
+							class="px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700">
+							编辑
+						</button>
+						<button @click="handleDelete(item)"
+							class="px-2 py-1 text-xs font-medium text-white bg-red-600 rounded hover:bg-red-700">
+							删除
+						</button>
+						<button @click="handleDisable(item)"
+							:class="[item.status === 0 ? 'bg-green-600 hover:bg-green-700' : 'bg-yellow-600 hover:bg-yellow-700', 'px-2 py-1 text-xs font-medium text-white rounded']">
+							{{ item.status === 0 ? '启用' : '禁用' }}
+						</button>
+					</div>
+				</template>
 
-      </ShowEntity>
+				<!-- 自定义用户状态列 -->
+				<template #status="{ value }">
+					<span :class="[
+	'inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium',
+	value === -1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+]">
+						{{ userStatusMapping[value] }}
+					</span>
+				</template>
 
-      <NavPagination 
-        :total="total"
-        :current="currentPage"
-        :pageSize="pageSize"
-        @page-change="handlePageChange"
-      />
-    </div>
+			</ShowEntity>
 
-    <div v-if="error" class="text-red-500 p-4 text-center">
-      {{ error }}
-    </div>
+			<NavPagination :total="total" :current="currentPage" :pageSize="pageSize" @page-change="handlePageChange" />
+		</div>
 
-    <!-- 确认删除弹窗 -->
-    <ConfirmModal
-      v-model="showDeleteModal"
-      level="error"
-      title="删除确认"
-      message="你确定要删除该应用？此操作不可撤销。"
-      @confirm="confirmDelete"
-      @cancel="cancelDelete"
-    />
+		<div v-if="error" class="text-red-500 p-4 text-center">
+			{{ error }}
+		</div>
 
-    <!-- 编辑模态框 -->
-    <EditModal
-      v-model="showEditModal"
-      title="编辑应用信息"
-      :fields="editFormFields"
-      :initial-data="itemToEdit"
-      type="primary"
-      @save="saveEdit"
-      @cancel="cancelEdit"
-    />
+		<!-- 确认删除弹窗 -->
+		<ConfirmModal v-model="showDeleteModal" level="error" title="删除确认" message="你确定要删除该应用？此操作不可撤销。"
+			@confirm="confirmDelete" @cancel="cancelDelete" />
 
-    <!-- 批量删除确认框 -->
-    <ConfirmModal
-      v-model="showBatchDeleteModal"
-      title="批量删除确认"
-      :message="`确定要删除选中的 ${selectedItems.length} 项数据吗？`"
-      level="error"
-      @confirm="confirmBatchDelete"
-      @cancel="cancelBatchDelete"
-    />
+		<!-- 编辑模态框 -->
+		<EditModal v-model="showEditModal" title="编辑应用信息" :fields="editFormFields" :initial-data="itemToEdit" type="primary"
+			@save="saveEdit" @cancel="cancelEdit" />
 
-    <!-- 禁用/启用用户确认框 -->
-    <ConfirmModal
-      v-model="showDisableModal"
-      :title="itemToDisable?.value?.status === -1 ? '禁用用户确认' : '启用用户确认'"
-      :message="itemToDisable?.value?.status === -1 ? '确定要禁用该用户吗？禁用后用户将无法登录。' : '确定要启用该用户吗？启用后用户将可以正常登录。'"
-      :level="itemToDisable?.value?.status === -1 ? 'warn' : 'info'"
-      @confirm="confirmDisable"
-      @cancel="cancelDisable"
-    />
-  </div>
-  <Message ref="message" />
+		<!-- 批量删除确认框 -->
+		<ConfirmModal v-model="showBatchDeleteModal" title="批量删除确认" :message="`确定要删除选中的 ${selectedItems.length} 项数据吗？`"
+			level="error" @confirm="confirmBatchDelete" @cancel="cancelBatchDelete" />
+
+		<!-- 禁用/启用用户确认框 -->
+		<ConfirmModal v-model="showDisableModal" :title="itemToDisable?.value?.status === -1 ? '禁用用户确认' : '启用用户确认'"
+			:message="itemToDisable?.value?.status === -1 ? '确定要禁用该用户吗？禁用后用户将无法登录。' : '确定要启用该用户吗？启用后用户将可以正常登录。'"
+			:level="itemToDisable?.value?.status === -1 ? 'warn' : 'info'" @confirm="confirmDisable"
+			@cancel="cancelDisable" />
+
+		<!-- 批量禁用确认框 -->
+		<ConfirmModal v-model="showBatchDisableModal" title="批量禁用确认" :message="`确定要禁用选中的 ${selectedItems.length} 个用户吗？禁用后用户将无法登录。`"
+			level="warn" @confirm="confirmBatchDisable" @cancel="cancelBatchDisable" />
+
+		<!-- 批量启用确认框 -->
+		<ConfirmModal v-model="showBatchEnableModal" title="批量启用确认" :message="`确定要启用选中的 ${selectedItems.length} 个用户吗？启用后用户将可以正常登录。`"
+			level="info" @confirm="confirmBatchEnable" @cancel="cancelBatchEnable" />
+	</div>
+	<Message ref="message" />
 </template>
 
 <script setup>
@@ -176,6 +150,11 @@ const headerProps = {
   softwareList: softwareList,
   searchPlaceholder: '搜索用户名'
 }
+// 添加激活码状态映射
+const userStatusMapping = {
+  '-1': '正常',
+  '0': '禁用'
+}
 
 // 添加搜索关键词变量
 const searchKeyword = ref('')
@@ -197,16 +176,19 @@ const showEditModal = ref(false)
 const showBatchEditModal = ref(false)
 const showBatchDeleteModal = ref(false)
 const showDisableModal = ref(false)
+const showBatchDisableModal = ref(false)
+const showBatchEnableModal = ref(false)
 const itemToEdit = ref(null)
 const itemToDelete = ref(null)
 const itemToDisable = ref(null)
 
 // 表头定义
 const headers = [
-  '程序名称',
+	'程序名称',
   '用户名',
   '到期时间',
-  '最近登录时间'
+  '最近登录时间',
+	'用户状态'
 ]
 
 // 表头映射
@@ -214,7 +196,8 @@ const headerMapping = {
   '程序名称': 'name',
   '用户名': 'username',
   '到期时间': 'expireTime',
-  '最近登录时间': 'lastLoginTime'
+  '最近登录时间': 'lastLoginTime',
+  '用户状态': 'status'
 }
 
 
@@ -240,7 +223,8 @@ const editFormFields = [
     type: 'text',
     required: true,
     placeholder: '请输入要修改的密码'
-  }
+  },
+	
 ]
 
 // 获取软件列表
@@ -280,10 +264,19 @@ const fetchSoftwareList = async () => {
 
 // 添加时间格式化函数
 const formatTime = (timestamp) => {
-  if (!timestamp || timestamp === '0' || timestamp === 0) {
-    return '未设置'
+	if (!timestamp || timestamp === '0' || timestamp === 0 || timestamp == null) {
+    return '无'
   }
-  return new Date(timestamp).toLocaleString('zh-CN', {
+  
+  // 处理ISO 8601格式的时间字符串 (例如: 2025-04-04T05:04:18.000+00:00)
+  let date;
+  if (typeof timestamp === 'string' && timestamp.includes('T')) {
+    date = new Date(timestamp);
+  } else {
+    date = new Date(timestamp);
+  }
+  
+  return date.toLocaleString('zh-CN', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -330,7 +323,7 @@ const fetchData = async (page = 1, pageSize = 20) => {
         name: item.sname,
         username: item.username,
         expireTime: formatTime(item.expiredTime),
-        lastLoginTime: formatTime(item.lastLoginTime),
+        lastLoginTime: formatTime(item.loginTime),
         status: item.status // 添加状态字段
       }))
       total.value = response.data.total || 0
@@ -373,7 +366,7 @@ const handleDelete = (item) => {
 // 禁用处理
 const handleDisable = (item) => {
   // 设置要禁用的项目
-  itemToDisable.value = {...item};
+  itemToDisable.value = item;
   // 显示确认模态框
   showDisableModal.value = true;
   console.log('禁用处理:', itemToDisable.value); // 添加日志以便调试
@@ -382,6 +375,16 @@ const handleDisable = (item) => {
 // 批量删除处理
 const handleBatchDelete = () => {
   showBatchDeleteModal.value = true
+}
+
+// 批量禁用处理
+const handleBatchDisable = () => {
+  showBatchDisableModal.value = true
+}
+
+// 批量启用处理
+const handleBatchEnable = () => {
+  showBatchEnableModal.value = true
 }
 
 // 选择变化处理
@@ -445,10 +448,10 @@ const confirmDisable = async () => {
       method: 'post',
       data: {
         sid: selectedSoftware.value,
-        username: itemToDisable.value.username,
+        username: [itemToDisable.value.username],
         status: newStatus
       },
-      url: '/api/user/manager-user-status'
+      url: '/api/user/manager-user-change'
     })
 
     if (response.data.code === 200) {
@@ -599,6 +602,66 @@ const confirmBatchDelete = async () => {
 // 取消批量删除
 const cancelBatchDelete = () => {
   showBatchDeleteModal.value = false
+}
+
+// 通用批量状态变更函数
+const handleBatchStatusChange = async (status, successMessage, errorMessage, modalRef) => {
+  try {
+    loading.value = true
+    
+    const response = await api({
+      method: 'post',
+      data: {
+        sid: selectedSoftware.value,
+        username: selectedItems.value,
+        status: status
+      },
+      url: '/api/user/manager-user-change'
+    })
+
+    if (response.data.code === 200) {
+      message.value.show({
+        type: 'success',
+        content: successMessage
+      })
+      await fetchData(currentPage.value, pageSize.value)
+    } else {
+      message.value.show({
+        type: 'error',
+        content: response.data.message || errorMessage
+      })
+    }
+  } catch (err) {
+    message.value.show({
+      type: 'error', 
+      content: err.response?.data?.message || errorMessage
+    })
+  } finally {
+    loading.value = false
+  }
+
+  selectedItems.value = []
+  modalRef.value = false
+}
+
+// 确认批量禁用
+const confirmBatchDisable = async () => {
+  await handleBatchStatusChange(0, '批量禁用成功', '批量禁用失败', showBatchDisableModal)
+}
+
+// 取消批量禁用
+const cancelBatchDisable = () => {
+  showBatchDisableModal.value = false
+}
+
+// 确认批量启用
+const confirmBatchEnable = async () => {
+  await handleBatchStatusChange(-1, '批量启用成功', '批量启用失败', showBatchEnableModal)
+}
+
+// 取消批量启用
+const cancelBatchEnable = () => {
+  showBatchEnableModal.value = false
 }
 
 // 分页切换

@@ -245,6 +245,8 @@
 ### 8. 修改用户密码
 
 **接口描述**
+> 注意！该操作属于敏感操作，需要用户身份码进行权限验证！
+
 该接口用于修改指定用户的密码。
 
 **请求方法**
@@ -259,12 +261,14 @@
 | -------- | ------ | -------- | ------ |
 | username | string | 是       | 用户名 |
 | password | string | 是       | 新密码 |
+| idCode | string | 是       | 身份码（登陆时返回） |
 
 **请求示例**
 
 ```json
 {
   "username": "user",
-  "password": "newpassword"
+  "password": "newpassword",
+  "idCode": "CB02EF1F75CE472BA09A5C404E470ED9"
 }
 ```

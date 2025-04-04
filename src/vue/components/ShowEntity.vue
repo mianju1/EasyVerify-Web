@@ -28,6 +28,22 @@
 												</svg>
 												编辑
 											</button>
+											<button v-if="showBatchDisable"
+													@click="$emit('batch-disable')"
+													class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-yellow-600 rounded-lg hover:bg-yellow-700 focus:ring-4 focus:ring-yellow-300">
+												<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+													<path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd" />
+												</svg>
+												禁用
+											</button>
+											<button v-if="showBatchEnable"
+													@click="$emit('batch-enable')"
+													class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-4 focus:ring-green-300">
+												<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+													<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+												</svg>
+												启用
+											</button>
 											<button @click="$emit('batch-delete')"
 													class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:ring-red-300">
 												<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -131,6 +147,14 @@ const props = defineProps({
 	showBatchEdit: {
 		type: Boolean,
 		default: true
+	},
+	showBatchDisable: {
+		type: Boolean,
+		default: false
+	},
+	showBatchEnable: {
+		type: Boolean,
+		default: false
 	}
 })
 
@@ -140,6 +164,8 @@ const emit = defineEmits([
 	'disable',
 	'batch-edit',
 	'batch-delete',
+	'batch-disable',
+	'batch-enable',
 	'selection-change'
 ])
 

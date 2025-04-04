@@ -64,7 +64,7 @@
         <!-- 自定义用户状态列 -->
         <template #status="{ value }">
   <span :class="[
-    'inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium',
+	'inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium',
     value === '-1' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
   ]">
     {{ userStatusMapping[value] }}
